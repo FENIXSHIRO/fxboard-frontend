@@ -1,7 +1,9 @@
 import Home from '@/views/Home.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 
-export default createRouter({
+const isAuthenticated = false
+
+const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
@@ -18,3 +20,5 @@ export default createRouter({
     },
   ],
 })
+
+export default router

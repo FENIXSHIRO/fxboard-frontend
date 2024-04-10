@@ -7,7 +7,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import KonvaEditor from '@/components/KonvaEditor.vue'
+import KonvaEditor from '@/components/editor/KonvaEditor.vue'
 
 export default defineComponent({
   components: {
