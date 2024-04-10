@@ -1,7 +1,11 @@
-<template>
+<template :class="{ createItem: isCreatingActive }">
   <div>
-    <v-stage ref="stage" :config="configKonva" @mousedown="handleStageMouseDown"
-          @touchstart="handleStageMouseDown">
+    <v-stage 
+      ref="stage" 
+      :config="configKonva" 
+      @mousedown="handleStageMouseDown"
+      @touchstart="handleStageMouseDown"
+    >
       <v-layer ref="layer">
         <v-circle
           v-for="item in items"
@@ -14,11 +18,13 @@
         <v-transformer ref="transformer" />
       </v-layer>
     </v-stage>
+    <Toolbar @add-circle="addCircle"/>
   </div>
 </template>
 
 <script lang="ts">
 import Konva from "konva";
+import Toolbar from "@/components/editor/Toolbar.vue";
   
 const width = window.innerWidth;
 const height = window.innerHeight;
@@ -38,7 +44,7 @@ interface Item {
 
 function generateItems(): Item[] {
   const items: Item[] = [];
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 3; i++) {
     items.push({
       x: Math.random() * width,
       y: Math.random() * height,
@@ -56,6 +62,9 @@ function generateItems(): Item[] {
 }
 
 export default {
+  components: {
+    Toolbar // Регистрируем компонент тулбара
+  },
   data() {
     return {
       items: [] as Item[],
@@ -64,8 +73,11 @@ export default {
         width: width,
         height: height,
       },
-      selectedShapeName: ''
+      selectedShapeName: '',
+      isCreatingActive: false
     };
+  },
+  computed: {
   },
   methods: {
     handleDragstart(e: any) {
@@ -144,6 +156,30 @@ export default {
         transformerNode.nodes([]);
       }
     },
+    addCircle() {
+      const stage = (this.$refs.stage as Konva.Stage).getStage();
+      this.isCreatingActive = true
+      stage.on('click', (e) => {
+        const pos = stage.getPointerPosition();
+        if (pos) {
+          const newItem: Item = {
+            x: pos.x,
+            y: pos.y,
+            rotation: 0,
+            radius: 50,
+            scaleX: 1,
+            scaleY: 1,
+            id: `node-${this.items.length}`,
+            fill: Konva.Util.getRandomColor(),
+            draggable: true,
+            name: `node-${this.items.length}`
+          };
+          this.items.push(newItem);
+          stage.off('click');
+          this.isCreatingActive = false
+        }
+      });
+    } 
   },
   mounted() {
     this.items = generateItems();
@@ -153,4 +189,7 @@ export default {
 </script>
 
 <style scoped>
+.createItem {
+  cursor: crosshair;
+}
 </style>
