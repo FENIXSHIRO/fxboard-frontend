@@ -1,6 +1,8 @@
 <template>
-  <div class="toolbar bg-gray-50 border-1 border-black">
-    <button @click="addCircle">O</button>
+  <div class="flex flex-col toolbar absolute left-1 bg-[#ececec] top-[300px] border-[1px] rounded-lg border-solid border-[#4b4b4b]">
+    <button class="px-4 py-1 rounded-lg hover:bg-slate-300" @click="addCircle">O</button>
+    <button class="px-4 py-1 rounded-lg hover:bg-slate-300" @click="addCircle">O</button>
+    <button class="px-4 py-1 rounded-lg hover:bg-slate-300" @click="addCircle">O</button>
   </div>
 </template>
 
