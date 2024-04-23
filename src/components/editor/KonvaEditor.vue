@@ -1,6 +1,6 @@
 <template>
   <div 
-    class="border border-black"
+    class=""
     :class="{'createItem': isCreatingActive}"
   >
     <v-stage 
@@ -9,7 +9,25 @@
       @mousedown="handleStageMouseDown"
       @touchstart="handleStageMouseDown"
     >
+      <!-- Фоновая сетка -->
+      <v-layer>
+        <!-- Точки сетки -->
+        <template v-for="x in gridColumns">
+          <template v-for="y in gridRows"
+          :key="'gridPoint' + x + '-' + y"
+          >
+            <v-circle
+              :x="x * gridSize"
+              :y="y * gridSize"
+              radius="1"
+              fill="#ccc"
+            />
+          </template>
+        </template>
+      </v-layer>
+      
       <v-layer ref="layer">
+        <!-- Остальные элементы (фигуры) добавляются поверх сетки -->
         <component
           v-for="item in items"
           :is="getShapeComponent(item.shapeType)"
@@ -32,10 +50,13 @@
 
 <script lang="ts">
 import Konva from "konva";
-import Toolbar from "@/components/editor/toolbar.vue";
+import Toolbar from "@/components/editor/Toolbar.vue";
 
 const width = window.innerWidth;
 const height = window.innerHeight;
+const gridSize = 20; // Размер клетки сетки
+const gridColumns = Math.ceil(width / gridSize);
+const gridRows = Math.ceil(height / gridSize);
 
 interface Item {
   x: number;
@@ -70,7 +91,18 @@ export default {
       selectedShapeName: '',
       isCreatingActive: false,
       currentShapeType: '', // текущий тип фигуры для добавления
+      gridSize: gridSize,
+      gridColumns: gridColumns,
+      gridRows: gridRows
     };
+  },
+  computed: {
+    stageWidth(): number {
+      return this.gridColumns * this.gridSize;
+    },
+    stageHeight(): number {
+      return this.gridRows * this.gridSize;
+    }
   },
   methods: {
     getShapeComponent(shapeType: string) {
@@ -183,8 +215,8 @@ export default {
                 x: pos.x,
                 y: pos.y,
                 rotation: 0,
-                width: 50,
-                height: 50,
+                width: 100,
+                height: 100,
                 scaleX: 1,
                 scaleY: 1,
                 id: `node-${this.items.length}`,

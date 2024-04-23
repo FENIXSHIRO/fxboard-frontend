@@ -1,12 +1,27 @@
 <template>
-  <nav>
-    <router-link to="/">Home</router-link> | <router-link to="/board">Board</router-link> |
-    <router-link to="/about">About</router-link>
-  </nav>
   <main>
     <router-view />
   </main>
+  <RouterLinks />
 </template>
+
+<script lang="ts">
+import { defineComponent } from 'vue'
+
+import RouterLinks from "@/components/RouterLinks.vue";
+
+export default defineComponent({
+  components: {
+    RouterLinks
+  },
+  data: () => ({}),
+  props: {},
+  emits: [],
+  computed: {
+  },
+  methods: {}
+})
+</script>
 
 <style>
 #app {
