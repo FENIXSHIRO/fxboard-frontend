@@ -37,7 +37,7 @@
           @dragend="handleDragend"
           @transformend="handleTransformEnd"
         ></component>
-        <v-transformer ref="transformer" :config="transformerConfig"/>
+        <v-transformer ref="transformer"/>
       </v-layer>
     </v-stage>
     <Toolbar 
@@ -65,8 +65,10 @@ interface Item {
   draggable: boolean;
   name: string;
   shapeType: string;
+  strokeScaleEnabled: false;
   fill?: string;
   stroke?: string;
+  text?: string;
   // Параметры, специфичные для разных фигур
   radius?: number;
   width?: number;
@@ -85,8 +87,6 @@ export default {
       configKonva: {
         width: width,
         height: height,
-      },
-      transformerConfig: {
       },
       selectedShapeName: '',
       isCreatingActive: false,
@@ -173,6 +173,11 @@ export default {
         return;
       }
 
+      transformerNode.rotateAnchorOffset(20);
+      transformerNode.anchorCornerRadius(3);
+      transformerNode.rotateLineVisible(false);
+      transformerNode.padding(1);
+
       if (selectedNode) {
         transformerNode.nodes([selectedNode]);
       } else {
@@ -199,11 +204,11 @@ export default {
                 scaleX: 1,
                 scaleY: 1,
                 id: `node-${this.items.length}`,
-                fill: '#fff',
                 stroke: Konva.Util.getRandomColor(),
                 draggable: true,
                 name: `node-${this.items.length}`,
-                shapeType: 'circle'
+                shapeType: 'circle',
+                strokeScaleEnabled: false
               };
               break;
             case 'square':
@@ -216,11 +221,12 @@ export default {
                 scaleX: 1,
                 scaleY: 1,
                 id: `node-${this.items.length}`,
-                fill: '#fff',
+                text: 'test',
                 stroke: Konva.Util.getRandomColor(),
                 draggable: true,
                 name: `node-${this.items.length}`,
                 shapeType: 'square',
+                strokeScaleEnabled: false
               };
               break;
             case 'triangle':
@@ -232,11 +238,11 @@ export default {
                 scaleX: 1,
                 scaleY: 1,
                 id: `node-${this.items.length}`,
-                fill: '#fff',
                 stroke: Konva.Util.getRandomColor(),
                 draggable: true,
                 name: `node-${this.items.length}`,
                 shapeType: 'triangle',
+                strokeScaleEnabled: false
               };
               break;
             default:
