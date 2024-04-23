@@ -136,7 +136,6 @@ export default {
       item.rotation = e.target.rotation();
       item.scaleX = e.target.scaleX();
       item.scaleY = e.target.scaleY();
-      //item.fill = Konva.Util.getRandomColor(); // изменить цвет для наглядности
       item.stroke = Konva.Util.getRandomColor(); // изменить цвет для наглядности
     },
     handleStageMouseDown(e: { target: { getStage: () => any; getParent: () => { (): any; new(): any; className: string; }; name: () => any; }; }) {
