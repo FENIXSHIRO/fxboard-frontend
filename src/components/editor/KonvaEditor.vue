@@ -37,7 +37,7 @@
           @dragend="handleDragend"
           @transformend="handleTransformEnd"
         ></component>
-        <v-transformer ref="transformer" />
+        <v-transformer ref="transformer" :config="transformerConfig"/>
       </v-layer>
     </v-stage>
     <Toolbar 
@@ -54,9 +54,6 @@ import Toolbar from "@/components/editor/Toolbar.vue";
 
 const width = window.innerWidth;
 const height = window.innerHeight;
-const gridSize = 20; // Размер клетки сетки
-const gridColumns = Math.ceil(width / gridSize);
-const gridRows = Math.ceil(height / gridSize);
 
 interface Item {
   x: number;
@@ -65,10 +62,11 @@ interface Item {
   scaleX: number,
   scaleY: number,
   id: string;
-  fill: string;
   draggable: boolean;
   name: string;
-  shapeType: string; // Добавлен новый атрибут для определения типа фигуры
+  shapeType: string;
+  fill?: string;
+  stroke?: string;
   // Параметры, специфичные для разных фигур
   radius?: number;
   width?: number;
@@ -88,21 +86,17 @@ export default {
         width: width,
         height: height,
       },
+      transformerConfig: {
+      },
       selectedShapeName: '',
       isCreatingActive: false,
       currentShapeType: '', // текущий тип фигуры для добавления
-      gridSize: gridSize,
-      gridColumns: gridColumns,
-      gridRows: gridRows
+      gridSize: 20,
+      gridColumns: Math.ceil(window.innerWidth / 20),
+      gridRows: Math.ceil(window.innerHeight / 20)
     };
   },
   computed: {
-    stageWidth(): number {
-      return this.gridColumns * this.gridSize;
-    },
-    stageHeight(): number {
-      return this.gridRows * this.gridSize;
-    }
   },
   methods: {
     getShapeComponent(shapeType: string) {
@@ -142,7 +136,8 @@ export default {
       item.rotation = e.target.rotation();
       item.scaleX = e.target.scaleX();
       item.scaleY = e.target.scaleY();
-      item.fill = Konva.Util.getRandomColor(); // изменить цвет для наглядности
+      //item.fill = Konva.Util.getRandomColor(); // изменить цвет для наглядности
+      item.stroke = Konva.Util.getRandomColor(); // изменить цвет для наглядности
     },
     handleStageMouseDown(e: { target: { getStage: () => any; getParent: () => { (): any; new(): any; className: string; }; name: () => any; }; }) {
       // если кликнули по сцене, очистить выбор
@@ -204,10 +199,11 @@ export default {
                 scaleX: 1,
                 scaleY: 1,
                 id: `node-${this.items.length}`,
-                fill: Konva.Util.getRandomColor(),
+                fill: '#fff',
+                stroke: Konva.Util.getRandomColor(),
                 draggable: true,
                 name: `node-${this.items.length}`,
-                shapeType: 'circle',
+                shapeType: 'circle'
               };
               break;
             case 'square':
@@ -220,7 +216,8 @@ export default {
                 scaleX: 1,
                 scaleY: 1,
                 id: `node-${this.items.length}`,
-                fill: Konva.Util.getRandomColor(),
+                fill: '#fff',
+                stroke: Konva.Util.getRandomColor(),
                 draggable: true,
                 name: `node-${this.items.length}`,
                 shapeType: 'square',
@@ -235,7 +232,8 @@ export default {
                 scaleX: 1,
                 scaleY: 1,
                 id: `node-${this.items.length}`,
-                fill: Konva.Util.getRandomColor(),
+                fill: '#fff',
+                stroke: Konva.Util.getRandomColor(),
                 draggable: true,
                 name: `node-${this.items.length}`,
                 shapeType: 'triangle',
