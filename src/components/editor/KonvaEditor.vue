@@ -1,5 +1,8 @@
-<template :class="{ createItem: isCreatingActive }">
-  <div>
+<template>
+  <div 
+  class="border border-black"
+  :class="{'createItem': isCreatingActive}"
+  >
     <v-stage 
       ref="stage" 
       :config="configKonva" 
