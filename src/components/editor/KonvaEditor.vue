@@ -87,6 +87,7 @@ export default {
       configKonva: {
         width: width,
         height: height,
+        draggable: true
       },
       selectedShapeName: '',
       isCreatingActive: false,
