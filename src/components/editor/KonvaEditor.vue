@@ -28,7 +28,9 @@
 <script lang="ts">
 import Konva from "konva";
 import Toolbar from "@/components/editor/Toolbar.vue";
-  
+
+type nodeType = 'circle' | 'square' | 'sticker' | 'card'
+
 const width = window.innerWidth;
 const height = window.innerHeight;
 
@@ -77,7 +79,8 @@ export default {
         height: height,
       },
       selectedShapeName: '',
-      isCreatingActive: false
+      isCreatingActive: false,
+      nodeType: 'circle' as nodeType
     };
   },
   computed: {
