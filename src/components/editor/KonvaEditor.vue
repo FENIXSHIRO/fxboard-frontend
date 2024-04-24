@@ -8,6 +8,7 @@
       :config="configKonva" 
       @mousedown="handleStageMouseDown"
       @touchstart="handleStageMouseDown"
+      @wheel="handleStageWheel"
     >
       <!-- Фоновая сетка -->
       <v-layer>
@@ -20,7 +21,7 @@
               :x="x * gridSize"
               :y="y * gridSize"
               radius="1"
-              fill="#ccc"
+              fill="#000"
             />
           </template>
         </template>
@@ -94,7 +95,8 @@ export default {
       currentShapeType: '', // текущий тип фигуры для добавления
       gridSize: 20,
       gridColumns: Math.ceil(window.innerWidth / 20),
-      gridRows: Math.ceil(window.innerHeight / 20)
+      gridRows: Math.ceil(window.innerHeight / 20),
+      stageScale: 1 // Добавляем переменную для отслеживания масштаба
     };
   },
   computed: {
@@ -265,6 +267,35 @@ export default {
     },
     addTriangle() {
       this.addShape('triangle');
+    },
+    handleStageWheel(e: { evt: { deltaY: number; }; }) {
+      // определить направление прокрутки
+      const delta = e.evt.deltaY;
+      const stage = (this.$refs.stage as Konva.Stage).getStage();
+
+      // масштабировать сцену
+      const scaleBy = 1.1;
+      const oldScale = stage.scaleX();
+      const mousePointTo = {
+        x: stage.getPointerPosition()?.x / oldScale - stage.x() / oldScale,
+        y: stage.getPointerPosition()?.y / oldScale - stage.y() / oldScale,
+      };
+
+      const newScale = delta > 0 ? oldScale * scaleBy : oldScale / scaleBy;
+
+      stage.scale({ x: newScale, y: newScale });
+
+      const newPos = {
+        x:
+          -(mousePointTo.x - stage.getPointerPosition()?.x / newScale) *
+          newScale,
+        y:
+          -(mousePointTo.y - stage.getPointerPosition()?.y / newScale) *
+          newScale,
+      };
+      stage.position(newPos);
+      stage.batchDraw();
+      this.stageScale = newScale; // сохранить текущий масштаб
     }
   },
   mounted() {
