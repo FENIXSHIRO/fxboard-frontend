@@ -50,7 +50,6 @@
       :showMenu="showContextMenu"
       :mouseX="mouseClickX"
       :mouseY="mouseClickY"
-      :width="300"
       @update:showMenu="showContextMenu = $event"
      >
      <template #menu>
