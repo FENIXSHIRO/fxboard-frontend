@@ -50,7 +50,8 @@
       :showMenu="showContextMenu"
       :mouseX="mouseClickX"
       :mouseY="mouseClickY"
-      :width="200"
+      :width="300"
+      @update:showMenu="showContextMenu = $event"
      >
      <template #menu>
       <button @click="deleteShape">Удалить</button>
@@ -105,7 +106,8 @@ export default {
       },
       bgGridConfig: {
         radius: 1,
-        fill: '#000'
+        fill: '#000',
+        listening: false
       },
       selectedShapeName: '',
       isCreatingActive: false,
@@ -341,7 +343,6 @@ export default {
       if(this.selectedShape instanceof Konva.Shape)
       this.selectedShape.destroy();
       this.updateTransformer();
-      this.showContextMenu = false
     }
   },
   mounted() {

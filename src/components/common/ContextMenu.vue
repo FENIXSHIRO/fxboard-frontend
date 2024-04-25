@@ -1,9 +1,10 @@
 <template>
-  <div v-if="isShouldShowMenu" 
+  <div v-if="showMenu" 
     :style="{ top: mouseY + 4 + 'px', left: mouseX + 4 + 'px' }"  
-    class="absolute bg-[#ccc] min-w-[100px]"
+    class="absolute bg-[#eee] min-w-[100px] *:hover:bg-[#ccc] *:min-w-[100px]"
     tabindex="0"
     @click="close"
+    @blur="close"
     >
     <slot name="menu" />
   </div>
@@ -15,7 +16,6 @@ import { defineComponent } from 'vue'
 export default defineComponent({
   components: {},
   data: () => ({
-    isShouldShowMenu: false
   }),
   props: {
     showMenu: {
@@ -36,17 +36,14 @@ export default defineComponent({
     },
 
   },
-  emits: [],
+  emits: ['inFocus', 'update:showMenu'],
   computed: {
   },
   watch: {
-    showMenu(newValue) {
-      this.isShouldShowMenu = newValue
-    }
   },
   methods: {
     close() {
-      this.isShouldShowMenu = false
+      this.$emit('update:showMenu', false)
     }
   }
 })
