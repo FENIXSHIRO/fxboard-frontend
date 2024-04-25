@@ -37,7 +37,7 @@ export default defineComponent({
     },
 
   },
-  emits: ['inFocus', 'update:showMenu'],
+  emits: ['update:showMenu'],
   computed: {
   },
   watch: {
