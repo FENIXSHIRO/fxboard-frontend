@@ -1,5 +1,5 @@
 <template>
-  <div class="router bg-[#ececec] rounded-lg border border-solid border-[#4b4b4b] p-2"> 
+  <div class="router bg-[#eee] rounded-lg border border-solid border-[#4b4b4b] p-2"> 
     <nav>
       <router-link to="/" class="hover:text-blue-600">Home</router-link> | <router-link to="/board" class="hover:text-blue-600">Board</router-link> |
       <router-link to="/about" class="hover:text-blue-600">About</router-link>

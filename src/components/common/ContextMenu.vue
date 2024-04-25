@@ -1,7 +1,7 @@
 <template>
   <div v-if="showMenu" 
     :style="{ top: mouseY + 4 + 'px', left: mouseX + 4 + 'px' }"  
-    class="absolute bg-[#eee] min-w-[100px] *:hover:bg-[#ccc] *:min-w-[100px]"
+    class="absolute bg-[#eee] min-w-[100px] rounded-md shadow-md *:hover:bg-[#ccc] *:min-w-[100px] *:rounded-md"
     tabindex="0"
     ref="menuRef"
     @click="close"
