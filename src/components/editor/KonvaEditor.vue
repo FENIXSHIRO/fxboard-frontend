@@ -20,8 +20,7 @@
             <v-circle
               :x="x * gridSize"
               :y="y * gridSize"
-              radius="1"
-              fill="#000"
+              :config="bgGridConfig"
             />
           </template>
         </template>
@@ -37,6 +36,7 @@
           @dragstart="handleDragstart"
           @dragend="handleDragend"
           @transformend="handleTransformEnd"
+          @contextmenu="openContext($event)"
         ></component>
         <v-transformer ref="transformer"/>
       </v-layer>
@@ -46,12 +46,24 @@
       @add-square="addSquare"
       @add-triangle="addTriangle"
     />
+    <ContextMenu
+      :showMenu="showContextMenu"
+      :mouseX="mouseClickX"
+      :mouseY="mouseClickY"
+      :width="300"
+      @update:showMenu="showContextMenu = $event"
+     >
+     <template #menu>
+      <button @click="deleteShape">Удалить</button>
+     </template>
+    </ContextMenu>
   </div>
 </template>
 
 <script lang="ts">
 import Konva from "konva";
 import Toolbar from "@/components/editor/Toolbar.vue";
+import ContextMenu from "@/components/common/ContextMenu.vue";
 
 const width = window.innerWidth;
 const height = window.innerHeight;
@@ -69,6 +81,7 @@ interface Item {
   strokeScaleEnabled: false;
   fill?: string;
   stroke?: string;
+  strokeWidth?: number;
   text?: string;
   // Параметры, специфичные для разных фигур
   radius?: number;
@@ -79,7 +92,8 @@ interface Item {
 
 export default {
   components: {
-    Toolbar
+    Toolbar,
+    ContextMenu
   },
   data() {
     return {
@@ -90,13 +104,22 @@ export default {
         height: height,
         draggable: true
       },
+      bgGridConfig: {
+        radius: 1,
+        fill: '#000',
+        listening: false
+      },
       selectedShapeName: '',
       isCreatingActive: false,
       currentShapeType: '', // текущий тип фигуры для добавления
       gridSize: 20,
       gridColumns: Math.ceil(window.innerWidth / 20),
       gridRows: Math.ceil(window.innerHeight / 20),
-      stageScale: 1 // Добавляем переменную для отслеживания масштаба
+      stageScale: 1, // Добавляем переменную для отслеживания масштаба
+      showContextMenu: false,
+      mouseClickX: 0,
+      mouseClickY: 0,
+      selectedShape: null as Konva.Shape | Object | null
     };
   },
   computed: {
@@ -207,6 +230,7 @@ export default {
                 scaleY: 1,
                 id: `node-${this.items.length}`,
                 stroke: Konva.Util.getRandomColor(),
+                strokeWidth: 4,
                 draggable: true,
                 name: `node-${this.items.length}`,
                 shapeType: 'circle',
@@ -225,6 +249,7 @@ export default {
                 id: `node-${this.items.length}`,
                 text: 'test',
                 stroke: Konva.Util.getRandomColor(),
+                strokeWidth: 4,
                 draggable: true,
                 name: `node-${this.items.length}`,
                 shapeType: 'square',
@@ -276,9 +301,15 @@ export default {
       // масштабировать сцену
       const scaleBy = 1.1;
       const oldScale = stage.scaleX();
+
+      const pointerPosition = stage.getPointerPosition();
+      if (!pointerPosition) {
+          return; // Если позиция не определена, прерываем выполнение функции
+      }
+
       const mousePointTo = {
-        x: stage.getPointerPosition()?.x / oldScale - stage.x() / oldScale,
-        y: stage.getPointerPosition()?.y / oldScale - stage.y() / oldScale,
+        x: pointerPosition.x / oldScale - stage.x() / oldScale,
+        y: pointerPosition.y / oldScale - stage.y() / oldScale,
       };
 
       const newScale = delta > 0 ? oldScale * scaleBy : oldScale / scaleBy;
@@ -287,15 +318,30 @@ export default {
 
       const newPos = {
         x:
-          -(mousePointTo.x - stage.getPointerPosition()?.x / newScale) *
+          -(mousePointTo.x - pointerPosition.x / newScale) *
           newScale,
         y:
-          -(mousePointTo.y - stage.getPointerPosition()?.y / newScale) *
+          -(mousePointTo.y - pointerPosition.y / newScale) *
           newScale,
       };
       stage.position(newPos);
       stage.batchDraw();
       this.stageScale = newScale; // сохранить текущий масштаб
+    },
+    openContext(e: { evt: MouseEvent, target: Object }) {
+      if (e.evt instanceof MouseEvent) {
+        e.evt.preventDefault();
+      }
+      this.showContextMenu = true;
+      this.selectedShape = e.target
+      this.mouseClickX = e.evt.clientX
+      this.mouseClickY = e.evt.clientY
+    },
+    deleteShape() {
+      console.log("deleteShape")
+      if(this.selectedShape instanceof Konva.Shape)
+      this.selectedShape.destroy();
+      this.updateTransformer();
     }
   },
   mounted() {
