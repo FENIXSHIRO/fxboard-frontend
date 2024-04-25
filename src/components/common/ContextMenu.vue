@@ -42,7 +42,6 @@ export default defineComponent({
   },
   watch: {
     showMenu(newValue) {
-      console.log('cyka');
       setTimeout(() => {
         if (newValue && this.$refs.menuRef) {
           const menuRef = this.$refs.menuRef as HTMLDivElement
