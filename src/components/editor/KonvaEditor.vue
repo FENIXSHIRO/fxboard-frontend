@@ -333,7 +333,6 @@ export default {
         e.evt.preventDefault();
       }
       this.showContextMenu = true;
-      console.log(e.target)
       this.selectedShape = e.target
       this.mouseClickX = e.evt.clientX
       this.mouseClickY = e.evt.clientY
