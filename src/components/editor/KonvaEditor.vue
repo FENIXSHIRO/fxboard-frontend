@@ -1,27 +1,51 @@
 <template>
   <div 
-  class="border border-black"
-  :class="{'createItem': isCreatingActive}"
+    class=""
+    :class="{'createItem': isCreatingActive}"
   >
     <v-stage 
       ref="stage" 
       :config="configKonva" 
       @mousedown="handleStageMouseDown"
       @touchstart="handleStageMouseDown"
+      @wheel="handleStageWheel"
     >
+      <!-- Фоновая сетка -->
+      <v-layer>
+        <!-- Точки сетки -->
+        <template v-for="x in gridColumns">
+          <template v-for="y in gridRows"
+          :key="'gridPoint' + x + '-' + y"
+          >
+            <v-circle
+              :x="x * gridSize"
+              :y="y * gridSize"
+              radius="1"
+              fill="#000"
+            />
+          </template>
+        </template>
+      </v-layer>
+      
       <v-layer ref="layer">
-        <v-circle
+        <!-- Остальные элементы (фигуры) добавляются поверх сетки -->
+        <component
           v-for="item in items"
+          :is="getShapeComponent(item.shapeType)"
           :key="item.id"
           :config="item"
           @dragstart="handleDragstart"
           @dragend="handleDragend"
           @transformend="handleTransformEnd"
-        ></v-circle>
-        <v-transformer ref="transformer" />
+        ></component>
+        <v-transformer ref="transformer"/>
       </v-layer>
     </v-stage>
-    <Toolbar @add-circle="addCircle"/>
+    <Toolbar 
+      @add-circle="addCircle"
+      @add-square="addSquare"
+      @add-triangle="addTriangle"
+    />
   </div>
 </template>
 
@@ -29,46 +53,33 @@
 import Konva from "konva";
 import Toolbar from "@/components/editor/Toolbar.vue";
 
-type nodeType = 'circle' | 'square' | 'sticker' | 'card'
-
 const width = window.innerWidth;
 const height = window.innerHeight;
 
 interface Item {
   x: number;
   y: number;
-  radius: number;
   rotation: number;
   scaleX: number,
   scaleY: number,
   id: string;
-  fill: string;
   draggable: boolean;
   name: string;
-}
-
-function generateItems(): Item[] {
-  const items: Item[] = [];
-  for (let i = 0; i < 3; i++) {
-    items.push({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      rotation: 0,
-      radius: 50,
-      scaleX: 1,
-      scaleY: 1,
-      id: `node-${i}`,
-      fill: Konva.Util.getRandomColor(),
-      draggable: true,
-      name: `node-${i}`
-    });
-  }
-  return items;
+  shapeType: string;
+  strokeScaleEnabled: false;
+  fill?: string;
+  stroke?: string;
+  text?: string;
+  // Параметры, специфичные для разных фигур
+  radius?: number;
+  width?: number;
+  height?: number;
+  sides?: number; // для треугольников
 }
 
 export default {
   components: {
-    Toolbar // Регистрируем компонент тулбара
+    Toolbar
   },
   data() {
     return {
@@ -77,19 +88,36 @@ export default {
       configKonva: {
         width: width,
         height: height,
+        draggable: true
       },
       selectedShapeName: '',
       isCreatingActive: false,
-      nodeType: 'circle' as nodeType
+      currentShapeType: '', // текущий тип фигуры для добавления
+      gridSize: 20,
+      gridColumns: Math.ceil(window.innerWidth / 20),
+      gridRows: Math.ceil(window.innerHeight / 20),
+      stageScale: 1 // Добавляем переменную для отслеживания масштаба
     };
   },
   computed: {
   },
   methods: {
+    getShapeComponent(shapeType: string) {
+      switch (shapeType) {
+        case 'circle':
+          return 'v-circle';
+        case 'square':
+          return 'v-rect';
+        case 'triangle':
+          return 'v-regular-polygon';
+        default:
+          return 'v-circle'; // по умолчанию, возвращаем круг
+      }
+    },
     handleDragstart(e: any) {
-      // save drag element:
+      // сохранить идентификатор перетаскиваемого элемента
       this.dragItemId = e.target.id();
-      // move current element to the top, by rearranging the items array:
+      // поднять элемент в списке
       const item = this.items.find((i) => i.id === this.dragItemId);
       if (item) {
         const index = this.items.indexOf(item);
@@ -101,38 +129,33 @@ export default {
       this.dragItemId = null;
     },
     handleTransformEnd(e: { target: { x: () => number; y: () => number; rotation: () => number; scaleX: () => number; scaleY: () => number; }; }) {
-      // shape is transformed, let us save new attrs back to the node
-      // find element in our state
+      // обновить свойства элемента после трансформации
       const item = this.items.find(
         (r) => r.name === this.selectedShapeName
       );
       if(item === undefined) return;
-      // update the state
       item.x = e.target.x();
       item.y = e.target.y();
       item.rotation = e.target.rotation();
       item.scaleX = e.target.scaleX();
       item.scaleY = e.target.scaleY();
-
-      // change fill
-      item.fill = Konva.Util.getRandomColor();
+      item.stroke = Konva.Util.getRandomColor(); // изменить цвет для наглядности
     },
     handleStageMouseDown(e: { target: { getStage: () => any; getParent: () => { (): any; new(): any; className: string; }; name: () => any; }; }) {
-      // clicked on stage - clear selection
+      // если кликнули по сцене, очистить выбор
       if (e.target === e.target.getStage()) {
         this.selectedShapeName = '';
         this.updateTransformer();
         return;
       }
 
-      // clicked on transformer - do nothing
+      // если кликнули по трансформеру, ничего не делать
       const clickedOnTransformer =
         e.target.getParent().className === 'Transformer';
       if (clickedOnTransformer) {
         return;
       }
 
-      // find clicked rect by its name
       const name = e.target.name();
       const item = this.items.find((r) => r.name === name);
       if (item) {
@@ -143,52 +166,140 @@ export default {
       this.updateTransformer();
     },
     updateTransformer() {
-      // here we need to manually attach or detach Transformer node
       const transformerNode = (this.$refs.transformer as any).getNode();
       const stage = transformerNode.getStage();
       const { selectedShapeName } = this;
 
       const selectedNode = stage.findOne('.' + selectedShapeName);
-      // do nothing if selected node is already attached
       if (selectedNode === transformerNode.node()) {
         return;
       }
 
+      transformerNode.rotateAnchorOffset(20);
+      transformerNode.anchorCornerRadius(3);
+      transformerNode.rotateLineVisible(false);
+      transformerNode.padding(1);
+
       if (selectedNode) {
-        // attach to another node
         transformerNode.nodes([selectedNode]);
       } else {
-        // remove transformer
         transformerNode.nodes([]);
       }
     },
-    addCircle() {
+    addShape(shapeType: string) {
       const stage = (this.$refs.stage as Konva.Stage).getStage();
-      this.isCreatingActive = true
+      this.isCreatingActive = true;
+      this.currentShapeType = shapeType;
+
+      let newItem: Item; // Определяем переменную здесь
+
       stage.on('click', (e) => {
         const pos = stage.getPointerPosition();
         if (pos) {
-          const newItem: Item = {
-            x: pos.x,
-            y: pos.y,
-            rotation: 0,
-            radius: 50,
-            scaleX: 1,
-            scaleY: 1,
-            id: `node-${this.items.length}`,
-            fill: Konva.Util.getRandomColor(),
-            draggable: true,
-            name: `node-${this.items.length}`
-          };
-          this.items.push(newItem);
-          stage.off('click');
-          this.isCreatingActive = false
+          switch (shapeType) {
+            case 'circle':
+              newItem = {
+                x: pos.x,
+                y: pos.y,
+                rotation: 0,
+                radius: 50,
+                scaleX: 1,
+                scaleY: 1,
+                id: `node-${this.items.length}`,
+                stroke: Konva.Util.getRandomColor(),
+                draggable: true,
+                name: `node-${this.items.length}`,
+                shapeType: 'circle',
+                strokeScaleEnabled: false
+              };
+              break;
+            case 'square':
+              newItem = {
+                x: pos.x,
+                y: pos.y,
+                rotation: 0,
+                width: 100,
+                height: 100,
+                scaleX: 1,
+                scaleY: 1,
+                id: `node-${this.items.length}`,
+                text: 'test',
+                stroke: Konva.Util.getRandomColor(),
+                draggable: true,
+                name: `node-${this.items.length}`,
+                shapeType: 'square',
+                strokeScaleEnabled: false
+              };
+              break;
+            case 'triangle':
+              newItem = {
+                x: pos.x,
+                y: pos.y,
+                rotation: 0,
+                sides: 3,
+                scaleX: 1,
+                scaleY: 1,
+                id: `node-${this.items.length}`,
+                stroke: Konva.Util.getRandomColor(),
+                draggable: true,
+                name: `node-${this.items.length}`,
+                shapeType: 'triangle',
+                strokeScaleEnabled: false
+              };
+              break;
+            default:
+              break;
+          }
+
+          if (newItem) { // Проверяем, определена ли newItem
+            this.items.push(newItem);
+            stage.off('click');
+            this.isCreatingActive = false;
+          }
         }
       });
-    } 
+    },
+    addCircle() {
+      this.addShape('circle');
+    },
+    addSquare() {
+      this.addShape('square');
+    },
+    addTriangle() {
+      this.addShape('triangle');
+    },
+    handleStageWheel(e: { evt: { deltaY: number; }; }) {
+      // определить направление прокрутки
+      const delta = e.evt.deltaY;
+      const stage = (this.$refs.stage as Konva.Stage).getStage();
+
+      // масштабировать сцену
+      const scaleBy = 1.1;
+      const oldScale = stage.scaleX();
+      const mousePointTo = {
+        x: stage.getPointerPosition()?.x / oldScale - stage.x() / oldScale,
+        y: stage.getPointerPosition()?.y / oldScale - stage.y() / oldScale,
+      };
+
+      const newScale = delta > 0 ? oldScale * scaleBy : oldScale / scaleBy;
+
+      stage.scale({ x: newScale, y: newScale });
+
+      const newPos = {
+        x:
+          -(mousePointTo.x - stage.getPointerPosition()?.x / newScale) *
+          newScale,
+        y:
+          -(mousePointTo.y - stage.getPointerPosition()?.y / newScale) *
+          newScale,
+      };
+      stage.position(newPos);
+      stage.batchDraw();
+      this.stageScale = newScale; // сохранить текущий масштаб
+    }
   },
   mounted() {
-    this.items = generateItems();
+    this.items = []; // Изменить начальные значения или оставить пустым
   },
 };
 

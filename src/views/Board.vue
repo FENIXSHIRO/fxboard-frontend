@@ -1,8 +1,5 @@
 <template>
-  <div>
-    Editor
-    <KonvaEditor />
-  </div>
+  <KonvaEditor />
 </template>
 
 <script lang="ts">
