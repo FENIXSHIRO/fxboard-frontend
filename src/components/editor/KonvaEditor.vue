@@ -69,6 +69,7 @@ interface Item {
   strokeScaleEnabled: false;
   fill?: string;
   stroke?: string;
+  strokeWidth?: number;
   text?: string;
   // Параметры, специфичные для разных фигур
   radius?: number;
@@ -207,6 +208,7 @@ export default {
                 scaleY: 1,
                 id: `node-${this.items.length}`,
                 stroke: Konva.Util.getRandomColor(),
+                strokeWidth: 4,
                 draggable: true,
                 name: `node-${this.items.length}`,
                 shapeType: 'circle',
@@ -225,6 +227,7 @@ export default {
                 id: `node-${this.items.length}`,
                 text: 'test',
                 stroke: Konva.Util.getRandomColor(),
+                strokeWidth: 4,
                 draggable: true,
                 name: `node-${this.items.length}`,
                 shapeType: 'square',
@@ -276,9 +279,15 @@ export default {
       // масштабировать сцену
       const scaleBy = 1.1;
       const oldScale = stage.scaleX();
+
+      const pointerPosition = stage.getPointerPosition();
+      if (!pointerPosition) {
+          return; // Если позиция не определена, прерываем выполнение функции
+      }
+
       const mousePointTo = {
-        x: stage.getPointerPosition()?.x / oldScale - stage.x() / oldScale,
-        y: stage.getPointerPosition()?.y / oldScale - stage.y() / oldScale,
+        x: pointerPosition.x / oldScale - stage.x() / oldScale,
+        y: pointerPosition.y / oldScale - stage.y() / oldScale,
       };
 
       const newScale = delta > 0 ? oldScale * scaleBy : oldScale / scaleBy;
@@ -287,10 +296,10 @@ export default {
 
       const newPos = {
         x:
-          -(mousePointTo.x - stage.getPointerPosition()?.x / newScale) *
+          -(mousePointTo.x - pointerPosition.x / newScale) *
           newScale,
         y:
-          -(mousePointTo.y - stage.getPointerPosition()?.y / newScale) *
+          -(mousePointTo.y - pointerPosition.y / newScale) *
           newScale,
       };
       stage.position(newPos);
