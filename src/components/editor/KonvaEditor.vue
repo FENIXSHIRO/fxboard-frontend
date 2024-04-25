@@ -105,7 +105,7 @@ export default {
       },
       bgGridConfig: {
         radius: 1,
-        fill: '#000',
+        fill: '#111',
         listening: false
       },
       selectedShapeName: '',
