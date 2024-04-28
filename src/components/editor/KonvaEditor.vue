@@ -201,6 +201,17 @@ export default {
       transformerNode.anchorCornerRadius(3);
       transformerNode.rotateLineVisible(false);
       transformerNode.padding(1);
+      transformerNode.anchorStyleFunc(function(anchor: any) {
+      if (anchor.hasName('rotater')) {
+        anchor.fill('black');
+      }
+      if (anchor.hasName('top-center') || anchor.hasName('bottom-center')) {
+        anchor.height(6);
+        anchor.offsetY(3);
+        anchor.width(30);
+        anchor.offsetX(15);
+      }
+      });
 
       if (selectedNode) {
         transformerNode.nodes([selectedNode]);
