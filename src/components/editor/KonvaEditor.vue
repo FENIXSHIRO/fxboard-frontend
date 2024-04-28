@@ -162,6 +162,8 @@ export default {
       item.scaleX = e.target.scaleX();
       item.scaleY = e.target.scaleY();
       item.stroke = Konva.Util.getRandomColor(); // изменить цвет для наглядности
+
+      this.updateTransformer();
     },
     handleStageMouseDown(e: { target: { getStage: () => any; getParent: () => { (): any; new(): any; className: string; }; name: () => any; }; }) {
       // если кликнули по сцене, очистить выбор
@@ -191,25 +193,29 @@ export default {
       const transformerNode = (this.$refs.transformer as any).getNode();
       const stage = transformerNode.getStage();
       const { selectedShapeName } = this;
-
       const selectedNode = stage.findOne('.' + selectedShapeName);
+
       if (selectedNode === transformerNode.node()) {
         return;
       }
 
-      transformerNode.rotateAnchorOffset(20);
+      console.log(selectedNode?.attrs)
+
+      transformerNode.rotateAnchorOffset(30);
       transformerNode.anchorCornerRadius(3);
       transformerNode.rotateLineVisible(false);
       transformerNode.padding(1);
       transformerNode.anchorStyleFunc(function(anchor: any) {
       if (anchor.hasName('rotater')) {
         anchor.fill('black');
+        anchor.cornerRadius(anchor.width() / 2);
+        anchor.stroke('black')
       }
       if (anchor.hasName('top-center') || anchor.hasName('bottom-center')) {
-        anchor.height(6);
-        anchor.offsetY(3);
-        anchor.width(30);
-        anchor.offsetX(15);
+
+      }
+      if (anchor.hasName('middle-left') || anchor.hasName('middle-right')) {
+
       }
       });
 
