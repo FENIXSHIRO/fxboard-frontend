@@ -38,9 +38,7 @@
           @transformend="handleTransformEnd"
           @contextmenu="openContext($event)"
         ></component>
-        <v-transformer ref="transformer">
-          <p>aaaaaaaa</p>
-        </v-transformer>
+        <v-transformer ref="transformer" />
       </v-layer>
     </v-stage>
     <Toolbar 
