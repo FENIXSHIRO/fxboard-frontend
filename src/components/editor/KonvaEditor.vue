@@ -6,8 +6,8 @@
     <v-stage 
       ref="stage" 
       :config="configKonva"
-      @click="handleStageMouseDown"
-      @touchstart="handleStageMouseDown"
+      @click="handleStageMouseClick"
+      @touchstart="handleStageMouseClick"
       @wheel="handleStageWheel"
     >
       <!-- Фоновая сетка -->
@@ -65,6 +65,7 @@
 import Konva from "konva";
 import Toolbar from "@/components/editor/Toolbar.vue";
 import ContextMenu from "@/components/common/ContextMenu.vue";
+import { KonvaEventObject } from "konva/lib/Node";
 
 const width = window.innerWidth;
 const height = window.innerHeight;
@@ -167,7 +168,7 @@ export default {
 
       this.updateTransformer();
     },
-    handleStageMouseDown(e: { target: { getStage: () => any; getParent: () => { (): any; new(): any; className: string; }; name: () => any; }; }) {
+    handleStageMouseClick(e: KonvaEventObject<MouseEvent>) {
       // если кликнули по сцене, очистить выбор
       if (e.target === e.target.getStage()) {
         this.selectedShapeName = '';
@@ -234,7 +235,7 @@ export default {
 
       let newItem: Item; // Определяем переменную здесь
 
-      stage.on('click', (e) => {
+      const clickHandler = (e) => {
         const pos = stage.getPointerPosition();
         if (pos) {
           switch (shapeType) {
@@ -297,10 +298,12 @@ export default {
           if (newItem) { // Проверяем, определена ли newItem
             this.items.push(newItem);
             stage.off('click');
+            stage.on('click', (e) => this.handleStageMouseClick(e));
             this.isCreatingActive = false;
           }
         }
-      });
+      };
+      stage.on('click', clickHandler);
     },
     addCircle() {
       this.addShape('circle');
