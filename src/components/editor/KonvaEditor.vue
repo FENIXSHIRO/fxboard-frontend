@@ -5,8 +5,8 @@
   >
     <v-stage 
       ref="stage" 
-      :config="configKonva" 
-      @mousedown="handleStageMouseDown"
+      :config="configKonva"
+      @click="handleStageMouseDown"
       @touchstart="handleStageMouseDown"
       @wheel="handleStageWheel"
     >
@@ -38,7 +38,9 @@
           @transformend="handleTransformEnd"
           @contextmenu="openContext($event)"
         ></component>
-        <v-transformer ref="transformer"/>
+        <v-transformer ref="transformer">
+          <p>aaaaaaaa</p>
+        </v-transformer>
       </v-layer>
     </v-stage>
     <Toolbar 
@@ -172,14 +174,14 @@ export default {
         this.updateTransformer();
         return;
       }
-
+      
       // если кликнули по трансформеру, ничего не делать
       const clickedOnTransformer =
         e.target.getParent().className === 'Transformer';
       if (clickedOnTransformer) {
         return;
       }
-
+      
       const name = e.target.name();
       const item = this.items.find((r) => r.name === name);
       if (item) {
