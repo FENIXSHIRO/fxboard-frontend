@@ -178,7 +178,7 @@ export default {
       
       // если кликнули по трансформеру, ничего не делать
       const clickedOnTransformer =
-        e.target.getParent().className === 'Transformer';
+        e.target.getParent()?.className === 'Transformer';
       if (clickedOnTransformer) {
         return;
       }
@@ -235,7 +235,7 @@ export default {
 
       let newItem: Item; // Определяем переменную здесь
 
-      const clickHandler = (e) => {
+      const clickHandler = (e: KonvaEventObject<MouseEvent>) => {
         const pos = stage.getPointerPosition();
         if (pos) {
           switch (shapeType) {
