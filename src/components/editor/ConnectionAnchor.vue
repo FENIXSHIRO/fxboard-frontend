@@ -27,6 +27,7 @@
   :rotation="newRotation"
   draggable
   :perfectDrawEnabled="false"
+  :scaleX="1/newStageScale"
   @dragmove="test"
   ref="right"
 />
@@ -53,6 +54,7 @@ export default defineComponent({
         radius: 5,
         fill: '#aaa'
       },
+      newStageScale: this.stageScale,
       cneterX: this.x,
       cneterY: this.y,
       newRotation: this.rotation,
@@ -69,6 +71,7 @@ export default defineComponent({
     scaleX: { type: Number, default: 1 },
     scaleY: { type: Number, default: 1 },
     rotation: { type: Number, default: 0 },
+    stageScale: { type: Number, default: 1 },
   },
   watch: {
     x(newValue) {
@@ -85,6 +88,9 @@ export default defineComponent({
     },
     rotation(newValue) {
       this.newRotation = newValue
+    },
+    stageScale(newValue) {
+      this.newStageScale = newValue
     }
   },
   emits: [],
