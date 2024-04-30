@@ -208,6 +208,8 @@ export default {
       
       this.connectionAnchorProps.x = e.target.x()
       this.connectionAnchorProps.y = e.target.y()
+      this.connectionAnchorProps.scaleX = e.target.scaleX()
+      this.connectionAnchorProps.scaleY = e.target.scaleY()
 
       // если кликнули по трансформеру, ничего не делать
       const clickedOnTransformer =
