@@ -4,6 +4,7 @@
   :x="cneterX"
   :y="cneterY"
   :offsetY="verticalHalf*newScaleY+anchorOffset"
+  :rotation="newRotation"
   draggable
   :perfectDrawEnabled="false"
   ref="top"
@@ -13,6 +14,7 @@
   :x="cneterX"
   :y="cneterY"
   :offsetY="-verticalHalf*newScaleY-anchorOffset"
+  :rotation="newRotation"
   draggable
   :perfectDrawEnabled="false"
   ref="bottom"
@@ -22,8 +24,10 @@
   :x="cneterX"
   :offsetX="-horizontalHalf*newScaleX-anchorOffset"
   :y="cneterY"
+  :rotation="newRotation"
   draggable
   :perfectDrawEnabled="false"
+  @dragmove="test"
   ref="right"
 />
 <v-circle
@@ -31,6 +35,7 @@
   :x="cneterX"
   :offsetX="horizontalHalf*newScaleX+anchorOffset"
   :y="cneterY"
+  :rotation="newRotation"
   draggable
   :perfectDrawEnabled="false"
   ref="left"
@@ -77,12 +82,18 @@ export default defineComponent({
     },
     scaleY(newValue) {
       this.newScaleY = newValue
+    },
+    rotation(newValue) {
+      this.newRotation = newValue
     }
   },
   emits: [],
   computed: {
   },
   methods: {
+    test() {
+      console.log('AnchorClick')
+    }
   },
 
 })

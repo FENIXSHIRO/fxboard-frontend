@@ -47,6 +47,7 @@
           :y="connectionAnchorProps.y"
           :scaleX="connectionAnchorProps.scaleX"
           :scaleY="connectionAnchorProps.scaleY"
+          :rotation="connectionAnchorProps.rotation"
         />
       </v-layer>
     </v-stage>
@@ -74,7 +75,6 @@ import Toolbar from "@/components/editor/Toolbar.vue";
 import ContextMenu from "@/components/common/ContextMenu.vue";
 import ConnectionAnchor from "@/components/editor/ConnectionAnchor.vue"
 import { KonvaEventObject } from "konva/lib/Node";
-import { Transform } from "konva/lib/Util";
 
 const width = window.innerWidth;
 const height = window.innerHeight;
@@ -219,6 +219,7 @@ export default {
       this.connectionAnchorProps.y = e.target.y()
       this.connectionAnchorProps.scaleX = e.target.scaleX()
       this.connectionAnchorProps.scaleY = e.target.scaleY()
+      this.connectionAnchorProps.rotation = e.target.rotation()
     },
     updateTransformer() {
       const transformerNode = (this.$refs.transformer as any).getNode();
