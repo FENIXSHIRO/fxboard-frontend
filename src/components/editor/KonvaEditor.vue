@@ -37,8 +37,8 @@
           @dragend="handleDragend"
           @transformend="handleTransformEnd"
           @contextmenu="openContext($event)"
-          @dragmove="handleDragMove"
-          @transform="handleTransform"
+          @dragmove="updateConnectionAnchors"
+          @transform="updateConnectionAnchors"
         ></component>
         <v-transformer ref="transformer" />
         <ConnectionAnchor
@@ -159,10 +159,6 @@ export default {
           return 'v-circle'; // по умолчанию, возвращаем круг
       }
     },
-    handleDragMove(e: Konva.KonvaEventObject<DragEvent>) {
-      this.connectionAnchorProps.x = e.target.x()
-      this.connectionAnchorProps.y = e.target.y()
-    },
     handleDragstart(e: any) {
       // сохранить идентификатор перетаскиваемого элемента
       this.dragItemId = e.target.id();
@@ -192,12 +188,6 @@ export default {
 
       this.updateTransformer();
     },
-    handleTransform(e: Konva.KonvaEventObject<Transform>) {
-      this.connectionAnchorProps.scaleX = e.target.scaleX()
-      this.connectionAnchorProps.scaleY = e.target.scaleY()
-      this.connectionAnchorProps.x = e.target.x()
-      this.connectionAnchorProps.y = e.target.y()
-    },
     handleStageMouseClick(e: KonvaEventObject<MouseEvent>) {
       // если кликнули по сцене, очистить выбор
       if (e.target === e.target.getStage()) {
@@ -206,10 +196,7 @@ export default {
         return;
       }
       
-      this.connectionAnchorProps.x = e.target.x()
-      this.connectionAnchorProps.y = e.target.y()
-      this.connectionAnchorProps.scaleX = e.target.scaleX()
-      this.connectionAnchorProps.scaleY = e.target.scaleY()
+      this.updateConnectionAnchors(e);
 
       // если кликнули по трансформеру, ничего не делать
       const clickedOnTransformer =
@@ -226,6 +213,12 @@ export default {
         this.selectedShapeName = '';
       }
       this.updateTransformer();
+    },
+    updateConnectionAnchors(e: any) {
+      this.connectionAnchorProps.x = e.target.x()
+      this.connectionAnchorProps.y = e.target.y()
+      this.connectionAnchorProps.scaleX = e.target.scaleX()
+      this.connectionAnchorProps.scaleY = e.target.scaleY()
     },
     updateTransformer() {
       const transformerNode = (this.$refs.transformer as any).getNode();
