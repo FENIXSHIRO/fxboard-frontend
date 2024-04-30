@@ -2,7 +2,8 @@
 <v-circle
   :config="AnchorConfig"
   :x="cneterX"
-  :y="cneterY-verticalHalf*newScaleY-anchorOffset"
+  :y="cneterY"
+  :offsetY="verticalHalf*newScaleY+anchorOffset"
   draggable
   :perfectDrawEnabled="false"
   ref="top"
@@ -10,14 +11,16 @@
 <v-circle
   :config="AnchorConfig"
   :x="cneterX"
-  :y="cneterY+verticalHalf*newScaleY+anchorOffset"
+  :y="cneterY"
+  :offsetY="-verticalHalf*newScaleY-anchorOffset"
   draggable
   :perfectDrawEnabled="false"
   ref="bottom"
 />
 <v-circle
   :config="AnchorConfig"
-  :x="cneterX+horizontalHalf*newScaleX+anchorOffset"
+  :x="cneterX"
+  :offsetX="-horizontalHalf*newScaleX-anchorOffset"
   :y="cneterY"
   draggable
   :perfectDrawEnabled="false"
@@ -25,7 +28,8 @@
 />
 <v-circle
   :config="AnchorConfig"
-  :x="cneterX-horizontalHalf*newScaleX-anchorOffset"
+  :x="cneterX"
+  :offsetX="horizontalHalf*newScaleX+anchorOffset"
   :y="cneterY"
   draggable
   :perfectDrawEnabled="false"
