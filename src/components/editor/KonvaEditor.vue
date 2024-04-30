@@ -37,8 +37,23 @@
           @dragend="handleDragend"
           @transformend="handleTransformEnd"
           @contextmenu="openContext($event)"
+          @dragmove="handleDragMove"
         ></component>
         <v-transformer ref="transformer" />
+        <ConnectionAnchor
+          v-if="isNodeEditiong"
+          :x="connectionAnchorPos.x"
+          :y="connectionAnchorPos.y"
+        />
+        <v-circle
+          v-if="isNodeEditiong"
+          radius="5"
+          fill="blue"
+          draggable
+          :perfectDrawEnabled="false"
+          :x="connectionAnchorPos.x+50"
+          :y="connectionAnchorPos.y+50"
+        />
       </v-layer>
     </v-stage>
     <Toolbar 
@@ -63,6 +78,7 @@
 import Konva from "konva";
 import Toolbar from "@/components/editor/Toolbar.vue";
 import ContextMenu from "@/components/common/ContextMenu.vue";
+import ConnectionAnchor from "@/components/editor/ConnectionAnchor.vue"
 import { KonvaEventObject } from "konva/lib/Node";
 
 const width = window.innerWidth;
@@ -79,6 +95,8 @@ interface Item {
   name: string;
   shapeType: string;
   strokeScaleEnabled: false;
+  offsetX?: number,
+  offsetY?: number,
   fill?: string;
   stroke?: string;
   strokeWidth?: number;
@@ -93,7 +111,8 @@ interface Item {
 export default {
   components: {
     Toolbar,
-    ContextMenu
+    ContextMenu,
+    ConnectionAnchor
   },
   data() {
     return {
@@ -111,6 +130,7 @@ export default {
       },
       selectedShapeName: '',
       isCreatingActive: false,
+      isNodeEditiong: false,
       currentShapeType: '', // текущий тип фигуры для добавления
       gridSize: 20,
       gridColumns: Math.ceil(window.innerWidth / 20),
@@ -119,7 +139,11 @@ export default {
       showContextMenu: false,
       mouseClickX: 0,
       mouseClickY: 0,
-      selectedShape: null as Konva.Shape | Object | null
+      selectedShape: null as Konva.Shape | Object | null,
+      connectionAnchorPos: {
+        x: 0,
+        y: 0
+      }
     };
   },
   computed: {
@@ -136,6 +160,11 @@ export default {
         default:
           return 'v-circle'; // по умолчанию, возвращаем круг
       }
+    },
+    handleDragMove(e: Konva.KonvaEventObject<DragEvent>) {
+      const newX = e.target.x();
+      const newY = e.target.y();
+      this.connectionAnchorPos = {x: newX, y: newY}
     },
     handleDragstart(e: any) {
       // сохранить идентификатор перетаскиваемого элемента
@@ -174,6 +203,10 @@ export default {
         return;
       }
       
+      const newX = e.target.x();
+      const newY = e.target.y();
+      this.connectionAnchorPos = {x: newX, y: newY}
+
       // если кликнули по трансформеру, ничего не делать
       const clickedOnTransformer =
         e.target.getParent()?.className === 'Transformer';
@@ -222,8 +255,10 @@ export default {
 
       if (selectedNode) {
         transformerNode.nodes([selectedNode]);
+        this.isNodeEditiong = true;
       } else {
         transformerNode.nodes([]);
+        this.isNodeEditiong = false;
       }
     },
     addShape(shapeType: string) {
@@ -258,6 +293,8 @@ export default {
               newItem = {
                 x: pos.x,
                 y: pos.y,
+                offsetX: 50,
+                offsetY: 50,
                 rotation: 0,
                 width: 100,
                 height: 100,
