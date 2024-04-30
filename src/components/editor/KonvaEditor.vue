@@ -38,13 +38,15 @@
           @transformend="handleTransformEnd"
           @contextmenu="openContext($event)"
           @dragmove="handleDragMove"
-          @transform=""
+          @transform="handleTransform"
         ></component>
         <v-transformer ref="transformer" />
         <ConnectionAnchor
           v-if="isNodeEditiong"
-          :x="connectionAnchorPos.x"
-          :y="connectionAnchorPos.y"
+          :x="connectionAnchorProps.x"
+          :y="connectionAnchorProps.y"
+          :scaleX="connectionAnchorProps.scaleX"
+          :scaleY="connectionAnchorProps.scaleY"
         />
       </v-layer>
     </v-stage>
@@ -72,6 +74,7 @@ import Toolbar from "@/components/editor/Toolbar.vue";
 import ContextMenu from "@/components/common/ContextMenu.vue";
 import ConnectionAnchor from "@/components/editor/ConnectionAnchor.vue"
 import { KonvaEventObject } from "konva/lib/Node";
+import { Transform } from "konva/lib/Util";
 
 const width = window.innerWidth;
 const height = window.innerHeight;
@@ -132,9 +135,12 @@ export default {
       mouseClickX: 0,
       mouseClickY: 0,
       selectedShape: null as Konva.Shape | Object | null,
-      connectionAnchorPos: {
+      connectionAnchorProps: {
         x: 0,
-        y: 0
+        y: 0,
+        rotation: 0,
+        scaleX: 1,
+        scaleY: 1,
       }
     };
   },
@@ -154,9 +160,8 @@ export default {
       }
     },
     handleDragMove(e: Konva.KonvaEventObject<DragEvent>) {
-      const newX = e.target.x();
-      const newY = e.target.y();
-      this.connectionAnchorPos = {x: newX, y: newY}
+      this.connectionAnchorProps.x = e.target.x()
+      this.connectionAnchorProps.y = e.target.y()
     },
     handleDragstart(e: any) {
       // сохранить идентификатор перетаскиваемого элемента
@@ -187,6 +192,12 @@ export default {
 
       this.updateTransformer();
     },
+    handleTransform(e: Konva.KonvaEventObject<Transform>) {
+      this.connectionAnchorProps.scaleX = e.target.scaleX()
+      this.connectionAnchorProps.scaleY = e.target.scaleY()
+      this.connectionAnchorProps.x = e.target.x()
+      this.connectionAnchorProps.y = e.target.y()
+    },
     handleStageMouseClick(e: KonvaEventObject<MouseEvent>) {
       // если кликнули по сцене, очистить выбор
       if (e.target === e.target.getStage()) {
@@ -195,9 +206,8 @@ export default {
         return;
       }
       
-      const newX = e.target.x();
-      const newY = e.target.y();
-      this.connectionAnchorPos = {x: newX, y: newY}
+      this.connectionAnchorProps.x = e.target.x()
+      this.connectionAnchorProps.y = e.target.y()
 
       // если кликнули по трансформеру, ничего не делать
       const clickedOnTransformer =

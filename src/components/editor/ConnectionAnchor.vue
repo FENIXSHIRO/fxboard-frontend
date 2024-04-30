@@ -2,14 +2,22 @@
 <v-circle
   :config="AnchorConfig"
   :x="cneterX"
-  :y="cneterY-verticalOffset"
+  :y="cneterY-verticalHalf*newScaleY-anchorOffset"
   draggable
   :perfectDrawEnabled="false"
   ref="top"
 />
 <v-circle
   :config="AnchorConfig"
-  :x="cneterX+horizontalOffset"
+  :x="cneterX"
+  :y="cneterY+verticalHalf*newScaleY+anchorOffset"
+  draggable
+  :perfectDrawEnabled="false"
+  ref="bottom"
+/>
+<v-circle
+  :config="AnchorConfig"
+  :x="cneterX+horizontalHalf*newScaleX+anchorOffset"
   :y="cneterY"
   draggable
   :perfectDrawEnabled="false"
@@ -17,19 +25,11 @@
 />
 <v-circle
   :config="AnchorConfig"
-  :x="cneterX-horizontalOffset"
+  :x="cneterX-horizontalHalf*newScaleX-anchorOffset"
   :y="cneterY"
   draggable
   :perfectDrawEnabled="false"
   ref="left"
-/>
-<v-circle
-  :config="AnchorConfig"
-  :x="cneterX"
-  :y="cneterY+verticalOffset"
-  draggable
-  :perfectDrawEnabled="false"
-  ref="bottom"
 />
 </template>
 
@@ -42,19 +42,24 @@ export default defineComponent({
     return {
       AnchorConfig: {
         radius: 5,
-        fill: 'red'
+        fill: '#aaa'
       },
       cneterX: this.x,
       cneterY: this.y,
-      verticalOffset: 70,
-      horizontalOffset: 70
+      newRotation: this.rotation,
+      newScaleX: this.scaleX,
+      newScaleY: this.scaleY,
+      verticalHalf: 50,
+      horizontalHalf: 50,
+      anchorOffset: 20
     };
   },
   props: {
     x: { type: Number, required: true },
     y: { type: Number, required: true },
-    scale: { type: Number },
-    rotation: { type: Number },
+    scaleX: { type: Number, default: 1 },
+    scaleY: { type: Number, default: 1 },
+    rotation: { type: Number, default: 0 },
   },
   watch: {
     x(newValue) {
@@ -62,6 +67,12 @@ export default defineComponent({
     },
     y(newValue) {
       this.cneterY = newValue
+    },
+    scaleX(newValue) {
+      this.newScaleX = newValue
+    },
+    scaleY(newValue) {
+      this.newScaleY = newValue
     }
   },
   emits: [],
