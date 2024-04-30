@@ -38,21 +38,13 @@
           @transformend="handleTransformEnd"
           @contextmenu="openContext($event)"
           @dragmove="handleDragMove"
+          @transform=""
         ></component>
         <v-transformer ref="transformer" />
         <ConnectionAnchor
           v-if="isNodeEditiong"
           :x="connectionAnchorPos.x"
           :y="connectionAnchorPos.y"
-        />
-        <v-circle
-          v-if="isNodeEditiong"
-          radius="5"
-          fill="blue"
-          draggable
-          :perfectDrawEnabled="false"
-          :x="connectionAnchorPos.x+50"
-          :y="connectionAnchorPos.y+50"
         />
       </v-layer>
     </v-stage>
@@ -235,7 +227,7 @@ export default {
 
       console.log(selectedNode?.attrs)
 
-      transformerNode.rotateAnchorOffset(30);
+      transformerNode.rotateAnchorOffset(35);
       transformerNode.anchorCornerRadius(3);
       transformerNode.rotateLineVisible(false);
       transformerNode.padding(1);

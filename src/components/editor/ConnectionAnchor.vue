@@ -44,8 +44,8 @@ export default defineComponent({
         radius: 5,
         fill: 'red'
       },
-      cneterX: 0,
-      cneterY: 0,
+      cneterX: this.x,
+      cneterY: this.y,
       verticalOffset: 70,
       horizontalOffset: 70
     };
@@ -53,6 +53,8 @@ export default defineComponent({
   props: {
     x: { type: Number, required: true },
     y: { type: Number, required: true },
+    scale: { type: Number },
+    rotation: { type: Number },
   },
   watch: {
     x(newValue) {
