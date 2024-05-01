@@ -9,6 +9,9 @@
       @click="handleStageMouseClick"
       @touchstart="handleStageMouseClick"
       @wheel="handleStageWheel"
+      @mousedown="test"
+      @mousemove="handleMouseMove"
+      @mouseup="handleMouseUp"
     >
       <!-- Фоновая сетка -->
       <v-layer>
@@ -30,6 +33,11 @@
         <!-- Остальные элементы (фигуры) добавляются поверх сетки -->
         <v-line
           v-for="line in connections"
+          :key="line.id"
+          :config="{
+            stroke: 'black',
+            points: line.points
+          }"
         />
         <component
           v-for="item in items"
@@ -51,7 +59,6 @@
           :scaleX="connectionAnchorProps.scaleX"
           :scaleY="connectionAnchorProps.scaleY"
           :rotation="connectionAnchorProps.rotation"
-          @anchor-test="test"
         />
       </v-layer>
     </v-stage>
@@ -107,6 +114,11 @@ interface Item {
   sides?: number; // для треугольников
 }
 
+interface Line {
+  id: number,
+  points: any[]
+}
+
 export default {
   components: {
     Toolbar,
@@ -127,7 +139,10 @@ export default {
         fill: '#111',
         listening: false
       },
-      connections: [],
+      lineConfig: {
+
+      },
+      connections: [] as Line[],
       drawningLine: false,
       selectedShapeName: '',
       isCreatingActive: false,
@@ -153,9 +168,40 @@ export default {
   computed: {
   },
   methods: {
-    test() {
-      console.log('anchorTest')
-      this.configKonva.draggable = false
+    test(e: any) {
+      const onNode = e.target instanceof Konva.Circle;
+      if (!onNode) {
+        return;
+      }
+
+      this.configKonva.draggable = false;
+      this.drawningLine = true;
+      this.connections.push({
+        id: Date.now(),
+        points: [e.target.x(), e.target.y()]
+      });
+    },
+    handleMouseMove(e: any) {
+      if (!this.drawningLine) {
+        return;
+      }
+      const pos = e.target.getStage().getPointerPosition();
+      const lastLine = this.connections[this.connections.length - 1];
+      lastLine.points = [lastLine.points[0], lastLine.points[1], pos.x, pos.y];
+    },
+    handleMouseUp(e: any) {
+      const onCircle = e.target instanceof Konva.Circle;
+      if (!onCircle) {
+        return;
+      }
+      this.drawningLine = false;
+      const lastLine = this.connections[this.connections.length - 1];
+      lastLine.points = [
+        lastLine.points[0],
+        lastLine.points[1],
+        e.target.x(),
+        e.target.y()
+      ];
     },
     getShapeComponent(shapeType: string) {
       switch (shapeType) {

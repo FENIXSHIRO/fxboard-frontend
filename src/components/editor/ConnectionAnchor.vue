@@ -8,6 +8,7 @@
   :perfectDrawEnabled="false"
   @mouseover="overAnchor"
   @mouseout="outAnchor"
+  @mousedown="test"
   ref="top"
 />
 <v-circle
@@ -19,6 +20,7 @@
   :perfectDrawEnabled="false"
   @mouseover="overAnchor"
   @mouseout="outAnchor"
+  @mousedown="test"
   ref="bottom"
 />
 <v-circle
@@ -28,10 +30,10 @@
   :y="cneterY"
   :rotation="newRotation"
   :scaleX="1/newStageScale"
-  @mousedown="test"
   :perfectDrawEnabled="false"
   @mouseover="overAnchor"
   @mouseout="outAnchor"
+  @mousedown="test"
   ref="right"
 />
 <v-circle
@@ -43,6 +45,7 @@
   :perfectDrawEnabled="false"
   @mouseover="overAnchor"
   @mouseout="outAnchor"
+  @mousedown="test"
   ref="left"
 />
 </template>
@@ -98,12 +101,13 @@ export default defineComponent({
       this.newStageScale = newValue
     }
   },
-  emits: ['anchorTest'],
+  emits: ['connectNodes'],
   computed: {
   },
   methods: {
-    test() {
-      this.$emit('anchorTest')
+    test(e: any) {
+      e.target.fill('#80d0ff');
+      this.$emit('connectNodes');
     },
     overAnchor(e: any) {
       e.target.fill('#eee');
