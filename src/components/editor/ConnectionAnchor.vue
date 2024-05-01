@@ -5,7 +5,6 @@
   :y="cneterY"
   :offsetY="verticalHalf*newScaleY+anchorOffset"
   :rotation="newRotation"
-  draggable
   :perfectDrawEnabled="false"
   ref="top"
 />
@@ -15,7 +14,6 @@
   :y="cneterY"
   :offsetY="-verticalHalf*newScaleY-anchorOffset"
   :rotation="newRotation"
-  draggable
   :perfectDrawEnabled="false"
   ref="bottom"
 />
@@ -25,10 +23,10 @@
   :offsetX="-horizontalHalf*newScaleX-anchorOffset"
   :y="cneterY"
   :rotation="newRotation"
-  draggable
-  :perfectDrawEnabled="false"
   :scaleX="1/newStageScale"
-  @dragmove="test"
+  @mousedown="test"
+  :perfectDrawEnabled="false"
+  class="hover:bg-red-600"
   ref="right"
 />
 <v-circle
@@ -37,7 +35,6 @@
   :offsetX="horizontalHalf*newScaleX+anchorOffset"
   :y="cneterY"
   :rotation="newRotation"
-  draggable
   :perfectDrawEnabled="false"
   ref="left"
 />
@@ -93,12 +90,12 @@ export default defineComponent({
       this.newStageScale = newValue
     }
   },
-  emits: [],
+  emits: ['anchorTest'],
   computed: {
   },
   methods: {
     test() {
-      console.log('AnchorClick')
+      this.$emit('anchorTest')
     }
   },
 

@@ -28,6 +28,9 @@
       
       <v-layer ref="layer">
         <!-- Остальные элементы (фигуры) добавляются поверх сетки -->
+        <v-line
+          v-for="line in connections"
+        />
         <component
           v-for="item in items"
           :is="getShapeComponent(item.shapeType)"
@@ -48,6 +51,7 @@
           :scaleX="connectionAnchorProps.scaleX"
           :scaleY="connectionAnchorProps.scaleY"
           :rotation="connectionAnchorProps.rotation"
+          @anchor-test="test"
         />
       </v-layer>
     </v-stage>
@@ -123,6 +127,8 @@ export default {
         fill: '#111',
         listening: false
       },
+      connections: [],
+      drawningLine: false,
       selectedShapeName: '',
       isCreatingActive: false,
       isNodeEditiong: false,
@@ -147,6 +153,10 @@ export default {
   computed: {
   },
   methods: {
+    test() {
+      console.log('anchorTest')
+      this.configKonva.draggable = false
+    },
     getShapeComponent(shapeType: string) {
       switch (shapeType) {
         case 'circle':
@@ -189,6 +199,8 @@ export default {
       this.updateTransformer();
     },
     handleStageMouseClick(e: KonvaEventObject<MouseEvent>) {
+      this.configKonva.draggable = true;
+      
       // если кликнули по сцене, очистить выбор
       if (e.target === e.target.getStage()) {
         this.selectedShapeName = '';
@@ -314,10 +326,12 @@ export default {
                 y: pos.y,
                 rotation: 0,
                 sides: 3,
+                radius: 60,
                 scaleX: 1,
                 scaleY: 1,
                 id: `node-${this.items.length}`,
                 stroke: Konva.Util.getRandomColor(),
+                strokeWidth: 4,
                 draggable: true,
                 name: `node-${this.items.length}`,
                 shapeType: 'triangle',
