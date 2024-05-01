@@ -44,19 +44,20 @@
           :config="item"
           @dragstart="handleDragstart"
           @dragend="handleDragend"
+          @transformstart="handleTransformStart"
           @transformend="handleTransformEnd"
           @contextmenu="openContext($event)"
-          @dragmove="updateConnectionAnchors"
-          @transform="updateConnectionAnchors"
+          @dragmove="updateSelectedNodeAttributs"
+          @transform="updateSelectedNodeAttributs"
         ></component>
         <v-transformer ref="transformer" />
         <ConnectionAnchor
-          v-if="isNodeEditiong"
-          :x="connectionAnchorProps.x"
-          :y="connectionAnchorProps.y"
-          :scaleX="connectionAnchorProps.scaleX"
-          :scaleY="connectionAnchorProps.scaleY"
-          :rotation="connectionAnchorProps.rotation"
+          v-if="isNodeEditing"
+          :x="selectedNodeAttributs.x"
+          :y="selectedNodeAttributs.y"
+          :scaleX="selectedNodeAttributs.scaleX"
+          :scaleY="selectedNodeAttributs.scaleY"
+          :rotation="selectedNodeAttributs.rotation"
           @connectNodes="test"
         />
       </v-layer>
@@ -65,6 +66,14 @@
       @add-circle="addCircle"
       @add-square="addSquare"
       @add-triangle="addTriangle"
+    />
+    <FloatMenu 
+      v-if="isNodeEditing && showFloatMenu"
+      :targetX="selectedNodeAttributs.x"
+      :targetY="selectedNodeAttributs.y"
+      :scaleX="selectedNodeAttributs.scaleX"
+      :scaleY="selectedNodeAttributs.scaleY"
+      :rotation="selectedNodeAttributs.rotation"
     />
     <ContextMenu
       :showMenu="showContextMenu"
@@ -84,6 +93,7 @@ import Konva from "konva";
 import Toolbar from "@/components/editor/Toolbar.vue";
 import ContextMenu from "@/components/common/ContextMenu.vue";
 import ConnectionAnchor from "@/components/editor/ConnectionAnchor.vue"
+import FloatMenu from "@/components/editor/FloatMenu.vue";
 import { KonvaEventObject } from "konva/lib/Node";
 
 const width = window.innerWidth;
@@ -122,7 +132,8 @@ export default {
   components: {
     Toolbar,
     ContextMenu,
-    ConnectionAnchor
+    ConnectionAnchor,
+    FloatMenu
   },
   data() {
     return {
@@ -138,14 +149,11 @@ export default {
         fill: '#111',
         listening: false
       },
-      lineConfig: {
-
-      },
       connections: [] as Line[],
       drawningLine: false,
       selectedShapeName: '',
       isCreatingActive: false,
-      isNodeEditiong: false,
+      isNodeEditing: false,
       currentShapeType: '', // текущий тип фигуры для добавления
       gridSize: 20,
       gridColumns: Math.ceil(window.innerWidth / 20),
@@ -155,7 +163,8 @@ export default {
       mouseClickX: 0,
       mouseClickY: 0,
       selectedShape: null as Konva.Shape | Object | null,
-      connectionAnchorProps: {
+      showFloatMenu: false,
+      selectedNodeAttributs: {
         x: 0,
         y: 0,
         rotation: 0,
@@ -205,11 +214,17 @@ export default {
         this.items.splice(index, 1);
         this.items.push(item);
       }
+      this.showFloatMenu = false;
     },
     handleDragend(e: any) {
       this.dragItemId = null;
+      this.showFloatMenu = true;
+      this.updateSelectedNodeAttributs(e);
     },
-    handleTransformEnd(e: { target: { x: () => number; y: () => number; rotation: () => number; scaleX: () => number; scaleY: () => number; }; }) {
+    handleTransformStart(e: any) {
+      this.showFloatMenu = false;
+    },
+    handleTransformEnd(e: any) {
       // обновить свойства элемента после трансформации
       const item = this.items.find(
         (r) => r.name === this.selectedShapeName
@@ -222,6 +237,8 @@ export default {
       item.scaleY = e.target.scaleY();
       item.stroke = Konva.Util.getRandomColor(); // изменить цвет для наглядности
 
+      this.showFloatMenu = true;
+      this.updateSelectedNodeAttributs(e);
       this.updateTransformer();
     },
     handleStageMouseClick(e: KonvaEventObject<MouseEvent>) {
@@ -233,8 +250,9 @@ export default {
         this.updateTransformer();
         return;
       }
-      
-      this.updateConnectionAnchors(e);
+
+      this.showFloatMenu = true;
+      this.updateSelectedNodeAttributs(e);
 
       // если кликнули по трансформеру, ничего не делать
       const clickedOnTransformer =
@@ -252,12 +270,12 @@ export default {
       }
       this.updateTransformer();
     },
-    updateConnectionAnchors(e: any) {
-      this.connectionAnchorProps.x = e.target.x()
-      this.connectionAnchorProps.y = e.target.y()
-      this.connectionAnchorProps.scaleX = e.target.scaleX()
-      this.connectionAnchorProps.scaleY = e.target.scaleY()
-      this.connectionAnchorProps.rotation = e.target.rotation()
+    updateSelectedNodeAttributs(e: any) {
+      this.selectedNodeAttributs.x = e.target.x()
+      this.selectedNodeAttributs.y = e.target.y()
+      this.selectedNodeAttributs.scaleX = e.target.scaleX()
+      this.selectedNodeAttributs.scaleY = e.target.scaleY()
+      this.selectedNodeAttributs.rotation = e.target.rotation()
     },
     updateTransformer() {
       const transformerNode = (this.$refs.transformer as any).getNode();
@@ -292,10 +310,10 @@ export default {
 
       if (selectedNode) {
         transformerNode.nodes([selectedNode]);
-        this.isNodeEditiong = true;
+        this.isNodeEditing = true;
       } else {
         transformerNode.nodes([]);
-        this.isNodeEditiong = false;
+        this.isNodeEditing = false;
       }
     },
     addShape(shapeType: string) {
