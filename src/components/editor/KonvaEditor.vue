@@ -306,7 +306,7 @@ export default {
       let newItem: Item; // Определяем переменную здесь
 
       const clickHandler = (e: KonvaEventObject<MouseEvent>) => {
-        const pos = stage.getPointerPosition();
+        const pos = stage.getRelativePointerPosition();
         if (pos) {
           switch (shapeType) {
             case 'circle':
