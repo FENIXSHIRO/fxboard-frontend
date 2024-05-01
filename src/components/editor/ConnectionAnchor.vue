@@ -107,7 +107,7 @@ export default defineComponent({
   methods: {
     test(e: any) {
       e.target.fill('#80d0ff');
-      this.$emit('connectNodes');
+      this.$emit('connectNodes', e, 50);
     },
     overAnchor(e: any) {
       e.target.fill('#eee');
