@@ -326,7 +326,7 @@ export default {
                 y: pos.y,
                 rotation: 0,
                 sides: 3,
-                radius: 60,
+                radius: 50,
                 scaleX: 1,
                 scaleY: 1,
                 id: `node-${this.items.length}`,

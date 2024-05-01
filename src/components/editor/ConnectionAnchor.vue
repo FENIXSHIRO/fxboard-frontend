@@ -6,6 +6,8 @@
   :offsetY="verticalHalf*newScaleY+anchorOffset"
   :rotation="newRotation"
   :perfectDrawEnabled="false"
+  @mouseover="overAnchor"
+  @mouseout="outAnchor"
   ref="top"
 />
 <v-circle
@@ -15,6 +17,8 @@
   :offsetY="-verticalHalf*newScaleY-anchorOffset"
   :rotation="newRotation"
   :perfectDrawEnabled="false"
+  @mouseover="overAnchor"
+  @mouseout="outAnchor"
   ref="bottom"
 />
 <v-circle
@@ -26,7 +30,8 @@
   :scaleX="1/newStageScale"
   @mousedown="test"
   :perfectDrawEnabled="false"
-  class="hover:bg-red-600"
+  @mouseover="overAnchor"
+  @mouseout="outAnchor"
   ref="right"
 />
 <v-circle
@@ -36,11 +41,14 @@
   :y="cneterY"
   :rotation="newRotation"
   :perfectDrawEnabled="false"
+  @mouseover="overAnchor"
+  @mouseout="outAnchor"
   ref="left"
 />
 </template>
 
 <script lang="ts">
+import Konva from 'konva';
 import { defineComponent, ref } from 'vue'
 
 export default defineComponent({
@@ -96,6 +104,14 @@ export default defineComponent({
   methods: {
     test() {
       this.$emit('anchorTest')
+    },
+    overAnchor(e: any) {
+      e.target.fill('#eee');
+      e.target.stroke('#80d0ff');
+    },
+    outAnchor(e: any) {
+      e.target.fill(this.AnchorConfig.fill);
+      e.target.stroke(null);
     }
   },
 
