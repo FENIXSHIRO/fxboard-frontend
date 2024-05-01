@@ -69,8 +69,8 @@
     />
     <FloatMenu 
       v-if="isNodeEditing && showFloatMenu"
-      :targetX="selectedNodeAttributs.x"
-      :targetY="selectedNodeAttributs.y"
+      :targetX="selectedNodeAttributs.screenX"
+      :targetY="selectedNodeAttributs.screenY"
       :scaleX="selectedNodeAttributs.scaleX"
       :scaleY="selectedNodeAttributs.scaleY"
       :rotation="selectedNodeAttributs.rotation"
@@ -167,6 +167,8 @@ export default {
       selectedNodeAttributs: {
         x: 0,
         y: 0,
+        screenX: 0,
+        screenY: 0,
         rotation: 0,
         scaleX: 1,
         scaleY: 1,
@@ -271,6 +273,8 @@ export default {
       this.updateTransformer();
     },
     updateSelectedNodeAttributs(e: any) {
+      this.selectedNodeAttributs.screenX = e.evt.clientX
+      this.selectedNodeAttributs.screenY = e.evt.clientY
       this.selectedNodeAttributs.x = e.target.x()
       this.selectedNodeAttributs.y = e.target.y()
       this.selectedNodeAttributs.scaleX = e.target.scaleX()
@@ -286,9 +290,6 @@ export default {
       if (selectedNode === transformerNode.node()) {
         return;
       }
-
-      if(selectedNode)
-        console.log(selectedNode.attrs)
 
       transformerNode.rotateAnchorOffset(35);
       transformerNode.anchorCornerRadius(3);
