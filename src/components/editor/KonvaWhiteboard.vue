@@ -50,7 +50,10 @@
           @dragmove="updateSelectedNodeAttributs"
           @transform="updateSelectedNodeAttributs"
         ></component>
-        <v-transformer ref="transformer" />
+        <v-transformer
+          :config="transformerConfig"
+          ref="transformer" 
+         />
         <ConnectionAnchor
           v-if="isNodeEditing"
           :x="selectedNodeAttributs.x"
@@ -148,8 +151,16 @@ export default {
       },
       bgGridConfig: {
         radius: 1,
-        fill: '#111',
+        fill: '#333',
         listening: false
+      },
+      transformerConfig: {
+        keepRatio: false,
+        ignoreStroke: true,
+        rotateLineVisible: false,
+        padding: 5,
+        rotateAnchorOffset: 35,
+        anchorCornerRadius: 3
       },
       connections: [] as Line[],
       drawningLine: false,
@@ -291,11 +302,6 @@ export default {
       if (selectedNode === transformerNode.node()) {
         return;
       }
-
-      transformerNode.rotateAnchorOffset(35);
-      transformerNode.anchorCornerRadius(3);
-      transformerNode.rotateLineVisible(false);
-      transformerNode.padding(1);
       transformerNode.anchorStyleFunc(function(anchor: any) {
       if (anchor.hasName('rotater')) {
         anchor.fill('black');
