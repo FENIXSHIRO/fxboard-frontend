@@ -89,10 +89,10 @@ export default defineComponent({
       this.cneterY = newValue
     },
     scaleX(newValue) {
-      this.newScaleX = newValue
+      this.newScaleX = Math.abs(newValue)
     },
     scaleY(newValue) {
-      this.newScaleY = newValue
+      this.newScaleY = Math.abs(newValue)
     },
     rotation(newValue) {
       this.newRotation = newValue
