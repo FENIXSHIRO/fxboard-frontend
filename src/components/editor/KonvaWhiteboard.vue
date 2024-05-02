@@ -146,6 +146,8 @@ interface ItemGroup {
     height?: number,
     padding: number,
     align: string,
+    scaleX?: number,
+    scaleY?: number
   }
 }
 
@@ -182,6 +184,11 @@ export default {
         padding: 5,
         rotateAnchorOffset: 35,
         anchorCornerRadius: 3
+      },
+      defaultParameters: {
+        width: 100,
+        height: 100,
+        radius: 50
       },
       connections: [] as Line[],
       drawningLine: false,
@@ -306,10 +313,15 @@ export default {
       this.updateTransformer();
     },
     updateSelectedNodeAttributs(e: any) {
-        let target = e.target
+      let target = e.target
       if(e.target.getParent() instanceof Konva.Group) {
         target = e.target.getParent()
       }
+
+      const group = this.groups.find(
+        (r) => r.name === this.selectedGroupName
+      );
+
       this.selectedNodeAttributs.screenX = e.evt.clientX
       this.selectedNodeAttributs.screenY = e.evt.clientY
       this.selectedNodeAttributs.x = target.x()
@@ -317,6 +329,13 @@ export default {
       this.selectedNodeAttributs.scaleX = target.scaleX()
       this.selectedNodeAttributs.scaleY = target.scaleY()
       this.selectedNodeAttributs.rotation = target.rotation()
+
+      if(group === undefined) return;
+      if(!group.text) return
+      group.text.scaleX = 1/group.scaleX
+      group.text.scaleY = 1/group.scaleY
+      group.text.width = this.defaultParameters.width * group.scaleX
+      group.text.height = this.defaultParameters.height * group.scaleY
     },
     updateTransformer() {
       const transformerNode = (this.$refs.transformer as any).getNode();
@@ -364,8 +383,8 @@ export default {
               newGroup = {
                 x: pos.x,
                 y: pos.y,
-                width: 100,
-                height: 100,
+                width: this.defaultParameters.width,
+                height: this.defaultParameters.height,
                 rotation: 0,
                 scaleX: 1,
                 scaleY: 1,
@@ -375,7 +394,7 @@ export default {
                 item:{
                   stroke: '#212121',
                   strokeWidth: 4,
-                  radius: 50,
+                  radius: this.defaultParameters.radius,
                   shapeType: 'circle',
                   strokeScaleEnabled: false
                 }
@@ -385,8 +404,8 @@ export default {
             newGroup = {
                 x: pos.x,
                 y: pos.y,
-                width: 100,
-                height: 100,
+                width: this.defaultParameters.width,
+                height: this.defaultParameters.height,
                 offsetX: 50,
                 offsetY: 50,
                 rotation: 0,
@@ -396,8 +415,8 @@ export default {
                 draggable: true,
                 name: `node-${this.groups.length}`,
                 item:{
-                  width: 100,
-                  height: 100,
+                  width: this.defaultParameters.width,
+                  height: this.defaultParameters.height,
                   stroke: '#212121',
                   strokeWidth: 4,
                   shapeType: 'square',
@@ -419,8 +438,8 @@ export default {
             newGroup = {
                 x: pos.x,
                 y: pos.y,
-                width: 100,
-                height: 100,
+                width: this.defaultParameters.width,
+                height: this.defaultParameters.height,
                 rotation: 0,
                 scaleX: 1,
                 scaleY: 1,
