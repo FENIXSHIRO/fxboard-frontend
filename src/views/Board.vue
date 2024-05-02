@@ -1,14 +1,14 @@
 <template>
-  <KonvaEditor />
+  <KonvaWhiteboard />
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import KonvaEditor from '@/components/editor/KonvaEditor.vue'
+import KonvaWhiteboard from '@/components/editor/KonvaWhiteboard.vue'
 
 export default defineComponent({
   components: {
-    KonvaEditor
+    KonvaWhiteboard
   },
   data: () => ({}),
   props: {},
