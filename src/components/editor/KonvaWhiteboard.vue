@@ -74,6 +74,8 @@
       :scaleX="selectedNodeAttributs.scaleX"
       :scaleY="selectedNodeAttributs.scaleY"
       :rotation="selectedNodeAttributs.rotation"
+      @changeStroke="changeStroke"
+      @changeFill="changeFill"
     />
     <ContextMenu
       :showMenu="showContextMenu"
@@ -237,7 +239,6 @@ export default {
       item.rotation = e.target.rotation();
       item.scaleX = e.target.scaleX();
       item.scaleY = e.target.scaleY();
-      item.stroke = Konva.Util.getRandomColor(); // изменить цвет для наглядности
 
       this.showFloatMenu = true;
       this.updateSelectedNodeAttributs(e);
@@ -337,7 +338,7 @@ export default {
                 scaleX: 1,
                 scaleY: 1,
                 id: `node-${this.items.length}`,
-                stroke: Konva.Util.getRandomColor(),
+                stroke: '#212121',
                 strokeWidth: 4,
                 draggable: true,
                 name: `node-${this.items.length}`,
@@ -358,7 +359,7 @@ export default {
                 scaleY: 1,
                 id: `node-${this.items.length}`,
                 text: 'test',
-                stroke: Konva.Util.getRandomColor(),
+                stroke: '#212121',
                 strokeWidth: 4,
                 draggable: true,
                 name: `node-${this.items.length}`,
@@ -376,7 +377,7 @@ export default {
                 scaleX: 1,
                 scaleY: 1,
                 id: `node-${this.items.length}`,
-                stroke: Konva.Util.getRandomColor(),
+                stroke: '#212121',
                 strokeWidth: 4,
                 draggable: true,
                 name: `node-${this.items.length}`,
@@ -441,6 +442,20 @@ export default {
       stage.position(newPos);
       stage.batchDraw();
       this.stageScale = newScale; // сохранить текущий масштаб
+    },
+    changeFill(color: string) {
+      const item = this.items.find(
+        (r) => r.name === this.selectedShapeName
+      );
+      if(item === undefined) return;
+      item.fill = color
+    },
+    changeStroke(color: string) {
+      const item = this.items.find(
+        (r) => r.name === this.selectedShapeName
+      );
+      if(item === undefined) return;
+      item.stroke = color
     },
     openContext(e: { evt: MouseEvent, target: Object }) {
       if (e.evt instanceof MouseEvent) {
