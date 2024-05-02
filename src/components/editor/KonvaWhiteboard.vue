@@ -332,10 +332,10 @@ export default {
 
       if(group === undefined) return;
       if(!group.text) return
-      group.text.scaleX = 1/target.scaleX()
-      group.text.scaleY = 1/target.scaleY()
-      group.text.width = this.defaultParameters.width * target.scaleX()
-      group.text.height = this.defaultParameters.height * target.scaleY()
+      group.text.scaleX = 1/Math.abs(target.scaleX())
+      group.text.scaleY = 1/Math.abs(target.scaleY())
+      group.text.width = this.defaultParameters.width * Math.abs(target.scaleX())
+      group.text.height = this.defaultParameters.height * Math.abs(target.scaleY())
     },
     updateTransformer() {
       const transformerNode = (this.$refs.transformer as any).getNode();
