@@ -332,10 +332,10 @@ export default {
 
       if(group === undefined) return;
       if(!group.text) return
-      group.text.scaleX = 1/group.scaleX
-      group.text.scaleY = 1/group.scaleY
-      group.text.width = this.defaultParameters.width * group.scaleX
-      group.text.height = this.defaultParameters.height * group.scaleY
+      group.text.scaleX = 1/target.scaleX()
+      group.text.scaleY = 1/target.scaleY()
+      group.text.width = this.defaultParameters.width * target.scaleX()
+      group.text.height = this.defaultParameters.height * target.scaleY()
     },
     updateTransformer() {
       const transformerNode = (this.$refs.transformer as any).getNode();
@@ -423,7 +423,7 @@ export default {
                   strokeScaleEnabled: false
                 },
                 text: {
-                  text: 'text',
+                  text: 'texttexttexttexttexttexttexttexttexttexttexttexttexttext',
                   fontSize: 18,
                   fontFamily: 'Calibri',
                   fill: '#555',
