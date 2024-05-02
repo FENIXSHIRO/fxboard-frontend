@@ -37,11 +37,10 @@
             points: line.points
           }"
         />
-        <component
-          v-for="item in items"
-          :is="getShapeComponent(item.shapeType)"
-          :key="item.id"
-          :config="item"
+        <v-group 
+          v-for="group in groups"
+          :key="group.id"
+          :config="group"
           @dragstart="handleDragstart"
           @dragend="handleDragend"
           @transformstart="handleTransformStart"
@@ -49,7 +48,16 @@
           @contextmenu="openContext($event)"
           @dragmove="updateSelectedNodeAttributs"
           @transform="updateSelectedNodeAttributs"
-        ></component>
+        >
+          <component
+          :is="getShapeComponent(group.item.shapeType)"
+          :config="group.item"
+          />
+          <v-text
+            v-if="group.text"
+            :config="group.text"
+          />
+        </v-group>
         <v-transformer
           :config="transformerConfig"
           ref="transformer" 
@@ -104,28 +112,41 @@ import { KonvaEventObject } from "konva/lib/Node";
 const width = window.innerWidth;
 const height = window.innerHeight;
 
-interface Item {
-  x: number;
-  y: number;
-  rotation: number;
-  scaleX: number,
-  scaleY: number,
-  id: string;
-  draggable: boolean;
-  name: string;
-  shapeType: string;
-  strokeScaleEnabled: false;
-  offsetX?: number,
-  offsetY?: number,
-  fill?: string;
-  stroke?: string;
-  strokeWidth?: number;
-  text?: string;
-  // Параметры, специфичные для разных фигур
-  radius?: number;
-  width?: number;
-  height?: number;
-  sides?: number; // для треугольников
+interface ItemGroup {
+  x: number
+  y: number
+  width: number
+  height: number
+  offsetX?: number
+  offsetY?: number
+  rotation: number
+  scaleX: number
+  scaleY: number
+  id: string
+  draggable: boolean
+  name: string
+  item: {
+    shapeType: string,
+    strokeScaleEnabled: false,
+    fill?: string,
+    stroke?: string,
+    strokeWidth?: number,
+    // Параметры, специфичные для разных фигур
+    radius?: number,
+    width?: number,
+    height?: number,
+    sides?: number, // для треугольников
+  }
+  text?:{
+    text: string,
+    fontSize: number,
+    fontFamily?: string,
+    fill?: string,
+    width?: number,
+    height?: number,
+    padding: number,
+    align: string,
+  }
 }
 
 interface Line {
@@ -142,7 +163,7 @@ export default {
   },
   data() {
     return {
-      items: [] as Item[],
+      groups: [] as ItemGroup[],
       dragItemId: null as string | null,
       configKonva: {
         width: width,
@@ -164,7 +185,7 @@ export default {
       },
       connections: [] as Line[],
       drawningLine: false,
-      selectedShapeName: '',
+      selectedGroupName: '',
       isCreatingActive: false,
       isNodeEditing: false,
       currentShapeType: '', // текущий тип фигуры для добавления
@@ -223,11 +244,11 @@ export default {
       // сохранить идентификатор перетаскиваемого элемента
       this.dragItemId = e.target.id();
       // поднять элемент в списке
-      const item = this.items.find((i) => i.id === this.dragItemId);
-      if (item) {
-        const index = this.items.indexOf(item);
-        this.items.splice(index, 1);
-        this.items.push(item);
+      const group = this.groups.find((i) => i.id === this.dragItemId);
+      if (group) {
+        const index = this.groups.indexOf(group);
+        this.groups.splice(index, 1);
+        this.groups.push(group);
       }
       this.showFloatMenu = false;
     },
@@ -241,26 +262,26 @@ export default {
     },
     handleTransformEnd(e: any) {
       // обновить свойства элемента после трансформации
-      const item = this.items.find(
-        (r) => r.name === this.selectedShapeName
+      const group = this.groups.find(
+        (r) => r.name === this.selectedGroupName
       );
-      if(item === undefined) return;
-      item.x = e.target.x();
-      item.y = e.target.y();
-      item.rotation = e.target.rotation();
-      item.scaleX = e.target.scaleX();
-      item.scaleY = e.target.scaleY();
+      if(group === undefined) return;
+      group.x = e.target.x();
+      group.y = e.target.y();
+      group.rotation = e.target.rotation();
+      group.scaleX = e.target.scaleX();
+      group.scaleY = e.target.scaleY();
 
       this.showFloatMenu = true;
       this.updateSelectedNodeAttributs(e);
       this.updateTransformer();
     },
-    handleStageMouseClick(e: KonvaEventObject<MouseEvent>) {
+    handleStageMouseClick(e: any) {
       this.configKonva.draggable = true;
       
       // если кликнули по сцене, очистить выбор
       if (e.target === e.target.getStage()) {
-        this.selectedShapeName = '';
+        this.selectedGroupName = '';
         this.updateTransformer();
         return;
       }
@@ -275,31 +296,35 @@ export default {
         return;
       }
       
-      const name = e.target.name();
-      const item = this.items.find((r) => r.name === name);
-      if (item) {
-        this.selectedShapeName = name;
+      const name = e.target.getParent().name();
+      const group = this.groups.find((r) => r.name === name);
+      if (group) {
+        this.selectedGroupName = name;
       } else {
-        this.selectedShapeName = '';
+        this.selectedGroupName = '';
       }
       this.updateTransformer();
     },
     updateSelectedNodeAttributs(e: any) {
+        let target = e.target
+      if(e.target.getParent() instanceof Konva.Group) {
+        target = e.target.getParent()
+      }
       this.selectedNodeAttributs.screenX = e.evt.clientX
       this.selectedNodeAttributs.screenY = e.evt.clientY
-      this.selectedNodeAttributs.x = e.target.x()
-      this.selectedNodeAttributs.y = e.target.y()
-      this.selectedNodeAttributs.scaleX = e.target.scaleX()
-      this.selectedNodeAttributs.scaleY = e.target.scaleY()
-      this.selectedNodeAttributs.rotation = e.target.rotation()
+      this.selectedNodeAttributs.x = target.x()
+      this.selectedNodeAttributs.y = target.y()
+      this.selectedNodeAttributs.scaleX = target.scaleX()
+      this.selectedNodeAttributs.scaleY = target.scaleY()
+      this.selectedNodeAttributs.rotation = target.rotation()
     },
     updateTransformer() {
       const transformerNode = (this.$refs.transformer as any).getNode();
       const stage = transformerNode.getStage();
-      const { selectedShapeName } = this;
-      const selectedNode = stage.findOne('.' + selectedShapeName);
+      const { selectedGroupName } = this;
+      const selectedGroup = stage.findOne('.' + selectedGroupName);
 
-      if (selectedNode === transformerNode.node()) {
+      if (selectedGroup === transformerNode.node()) {
         return;
       }
       transformerNode.anchorStyleFunc(function(anchor: any) {
@@ -316,8 +341,8 @@ export default {
       }
       });
 
-      if (selectedNode) {
-        transformerNode.nodes([selectedNode]);
+      if (selectedGroup) {
+        transformerNode.nodes([selectedGroup]);
         this.isNodeEditing = true;
       } else {
         transformerNode.nodes([]);
@@ -329,74 +354,94 @@ export default {
       this.isCreatingActive = true;
       this.currentShapeType = shapeType;
 
-      let newItem: Item; // Определяем переменную здесь
+      let newGroup: ItemGroup; // Определяем переменную здесь
 
       const clickHandler = (e: KonvaEventObject<MouseEvent>) => {
         const pos = stage.getRelativePointerPosition();
         if (pos) {
           switch (shapeType) {
             case 'circle':
-              newItem = {
+              newGroup = {
                 x: pos.x,
                 y: pos.y,
+                width: 100,
+                height: 100,
                 rotation: 0,
-                radius: 50,
                 scaleX: 1,
                 scaleY: 1,
-                id: `node-${this.items.length}`,
-                stroke: '#212121',
-                strokeWidth: 4,
+                id: `node-${this.groups.length}`,
                 draggable: true,
-                name: `node-${this.items.length}`,
-                shapeType: 'circle',
-                strokeScaleEnabled: false
+                name: `node-${this.groups.length}`,
+                item:{
+                  stroke: '#212121',
+                  strokeWidth: 4,
+                  radius: 50,
+                  shapeType: 'circle',
+                  strokeScaleEnabled: false
+                }
               };
               break;
             case 'square':
-              newItem = {
+            newGroup = {
                 x: pos.x,
                 y: pos.y,
+                width: 100,
+                height: 100,
                 offsetX: 50,
                 offsetY: 50,
                 rotation: 0,
-                width: 100,
-                height: 100,
                 scaleX: 1,
                 scaleY: 1,
-                id: `node-${this.items.length}`,
-                text: 'test',
-                stroke: '#212121',
-                strokeWidth: 4,
+                id: `node-${this.groups.length}`,
                 draggable: true,
-                name: `node-${this.items.length}`,
-                shapeType: 'square',
-                strokeScaleEnabled: false
+                name: `node-${this.groups.length}`,
+                item:{
+                  width: 100,
+                  height: 100,
+                  stroke: '#212121',
+                  strokeWidth: 4,
+                  shapeType: 'square',
+                  strokeScaleEnabled: false
+                },
+                text: {
+                  text: 'text',
+                  fontSize: 18,
+                  fontFamily: 'Calibri',
+                  fill: '#555',
+                  width: 100,
+                  height: 100,
+                  padding: 20,
+                  align: 'center',
+                }
               };
               break;
             case 'triangle':
-              newItem = {
+            newGroup = {
                 x: pos.x,
                 y: pos.y,
+                width: 100,
+                height: 100,
                 rotation: 0,
-                sides: 3,
-                radius: 50,
                 scaleX: 1,
                 scaleY: 1,
-                id: `node-${this.items.length}`,
-                stroke: '#212121',
-                strokeWidth: 4,
+                id: `node-${this.groups.length}`,
                 draggable: true,
-                name: `node-${this.items.length}`,
-                shapeType: 'triangle',
-                strokeScaleEnabled: false
+                name: `node-${this.groups.length}`,
+                item:{
+                  stroke: '#212121',
+                  strokeWidth: 4,
+                  sides: 3,
+                  shapeType: 'triangle',
+                  strokeScaleEnabled: false
+                }
               };
               break;
             default:
               break;
           }
 
-          if (newItem) { // Проверяем, определена ли newItem
-            this.items.push(newItem);
+          if (newGroup) { // Проверяем, определена ли newItem
+            this.groups.push(newGroup);
             stage.off('click');
             stage.on('click', (e) => this.handleStageMouseClick(e));
             this.isCreatingActive = false;
@@ -450,37 +495,41 @@ export default {
       this.stageScale = newScale; // сохранить текущий масштаб
     },
     changeFill(color: string) {
-      const item = this.items.find(
-        (r) => r.name === this.selectedShapeName
+      const group = this.groups.find(
+        (r) => r.name === this.selectedGroupName
       );
-      if(item === undefined) return;
-      item.fill = color
+      if(group === undefined) return;
+      group.item.fill = color
     },
     changeStroke(color: string) {
-      const item = this.items.find(
-        (r) => r.name === this.selectedShapeName
+      const group = this.groups.find(
+        (r) => r.name === this.selectedGroupName
       );
-      if(item === undefined) return;
-      item.stroke = color
+      if(group === undefined) return;
+      group.item.stroke = color
     },
-    openContext(e: { evt: MouseEvent, target: Object }) {
+    openContext(e: any) {
       if (e.evt instanceof MouseEvent) {
         e.evt.preventDefault();
       }
       this.showContextMenu = true;
-      this.selectedShape = e.target
+      if(e.target.getParent()){
+        this.selectedShape = e.target.getParent()
+      } else {
+        this.selectedShape = e.target
+      }
       this.mouseClickX = e.evt.clientX
       this.mouseClickY = e.evt.clientY
     },
     deleteShape() {
       console.log("deleteShape")
-      if(this.selectedShape instanceof Konva.Shape)
+      if(this.selectedShape instanceof Konva.Group)
       this.selectedShape.destroy();
       this.updateTransformer();
     }
   },
   mounted() {
-    this.items = []; // Изменить начальные значения или оставить пустым
+    this.groups = []; // Изменить начальные значения или оставить пустым
   },
 };
 
