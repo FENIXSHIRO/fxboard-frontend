@@ -30,12 +30,7 @@ export default defineComponent({
     mouseY: {
       type: Number || String,
       default: 0
-    },
-    width: {
-      type: Number || String,
-      default: ''
-    },
-
+    }
   },
   emits: ['update:showMenu'],
   computed: {

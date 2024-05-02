@@ -5,10 +5,11 @@
   >
     <v-stage 
       ref="stage" 
-      :config="configKonva" 
-      @mousedown="handleStageMouseDown"
-      @touchstart="handleStageMouseDown"
+      :config="configKonva"
+      @click="handleStageMouseClick"
+      @touchstart="handleStageMouseClick"
       @wheel="handleStageWheel"
+      @mousemove="handleMouseMove"
     >
       <!-- Фоновая сетка -->
       <v-layer>
@@ -28,6 +29,14 @@
       
       <v-layer ref="layer">
         <!-- Остальные элементы (фигуры) добавляются поверх сетки -->
+        <v-line
+          v-for="line in connections"
+          :key="line.id"
+          :config="{
+            stroke: 'black',
+            points: line.points
+          }"
+        />
         <component
           v-for="item in items"
           :is="getShapeComponent(item.shapeType)"
@@ -35,10 +44,25 @@
           :config="item"
           @dragstart="handleDragstart"
           @dragend="handleDragend"
+          @transformstart="handleTransformStart"
           @transformend="handleTransformEnd"
           @contextmenu="openContext($event)"
+          @dragmove="updateSelectedNodeAttributs"
+          @transform="updateSelectedNodeAttributs"
         ></component>
-        <v-transformer ref="transformer"/>
+        <v-transformer
+          :config="transformerConfig"
+          ref="transformer" 
+         />
+        <ConnectionAnchor
+          v-if="isNodeEditing"
+          :x="selectedNodeAttributs.x"
+          :y="selectedNodeAttributs.y"
+          :scaleX="selectedNodeAttributs.scaleX"
+          :scaleY="selectedNodeAttributs.scaleY"
+          :rotation="selectedNodeAttributs.rotation"
+          @connectNodes="test"
+        />
       </v-layer>
     </v-stage>
     <Toolbar 
@@ -46,11 +70,20 @@
       @add-square="addSquare"
       @add-triangle="addTriangle"
     />
+    <FloatMenu 
+      v-if="isNodeEditing && showFloatMenu"
+      :targetX="selectedNodeAttributs.screenX"
+      :targetY="selectedNodeAttributs.screenY"
+      :scaleX="selectedNodeAttributs.scaleX"
+      :scaleY="selectedNodeAttributs.scaleY"
+      :rotation="selectedNodeAttributs.rotation"
+      @changeStroke="changeStroke"
+      @changeFill="changeFill"
+    />
     <ContextMenu
       :showMenu="showContextMenu"
       :mouseX="mouseClickX"
       :mouseY="mouseClickY"
-      :width="300"
       @update:showMenu="showContextMenu = $event"
      >
      <template #menu>
@@ -64,6 +97,9 @@
 import Konva from "konva";
 import Toolbar from "@/components/editor/Toolbar.vue";
 import ContextMenu from "@/components/common/ContextMenu.vue";
+import ConnectionAnchor from "@/components/editor/ConnectionAnchor.vue"
+import FloatMenu from "@/components/editor/FloatMenu.vue";
+import { KonvaEventObject } from "konva/lib/Node";
 
 const width = window.innerWidth;
 const height = window.innerHeight;
@@ -79,6 +115,8 @@ interface Item {
   name: string;
   shapeType: string;
   strokeScaleEnabled: false;
+  offsetX?: number,
+  offsetY?: number,
   fill?: string;
   stroke?: string;
   strokeWidth?: number;
@@ -90,10 +128,17 @@ interface Item {
   sides?: number; // для треугольников
 }
 
+interface Line {
+  id: number,
+  points: any[]
+}
+
 export default {
   components: {
     Toolbar,
-    ContextMenu
+    ContextMenu,
+    ConnectionAnchor,
+    FloatMenu
   },
   data() {
     return {
@@ -106,11 +151,22 @@ export default {
       },
       bgGridConfig: {
         radius: 1,
-        fill: '#000',
+        fill: '#333',
         listening: false
       },
+      transformerConfig: {
+        keepRatio: false,
+        ignoreStroke: true,
+        rotateLineVisible: false,
+        padding: 5,
+        rotateAnchorOffset: 35,
+        anchorCornerRadius: 3
+      },
+      connections: [] as Line[],
+      drawningLine: false,
       selectedShapeName: '',
       isCreatingActive: false,
+      isNodeEditing: false,
       currentShapeType: '', // текущий тип фигуры для добавления
       gridSize: 20,
       gridColumns: Math.ceil(window.innerWidth / 20),
@@ -119,12 +175,38 @@ export default {
       showContextMenu: false,
       mouseClickX: 0,
       mouseClickY: 0,
-      selectedShape: null as Konva.Shape | Object | null
+      selectedShape: null as Konva.Shape | Object | null,
+      showFloatMenu: false,
+      selectedNodeAttributs: {
+        x: 0,
+        y: 0,
+        screenX: 0,
+        screenY: 0,
+        rotation: 0,
+        scaleX: 1,
+        scaleY: 1,
+      }
     };
   },
   computed: {
   },
   methods: {
+    test(e: any, offset: any) {
+      this.drawningLine = true;
+      this.configKonva.draggable = false;
+      this.connections.push({
+        id: Date.now(),
+        points: [e.target.x() + offset, e.target.y()]
+      });
+    },
+    handleMouseMove(e: any) {
+      if (!this.drawningLine) {
+        return;
+      }
+      const pos = e.target.getStage().getRelativePointerPosition()
+      const lastLine = this.connections[this.connections.length - 1];
+      lastLine.points = [lastLine.points[0], lastLine.points[1], pos.x, pos.y];
+    },
     getShapeComponent(shapeType: string) {
       switch (shapeType) {
         case 'circle':
@@ -147,11 +229,17 @@ export default {
         this.items.splice(index, 1);
         this.items.push(item);
       }
+      this.showFloatMenu = false;
     },
     handleDragend(e: any) {
       this.dragItemId = null;
+      this.showFloatMenu = true;
+      this.updateSelectedNodeAttributs(e);
     },
-    handleTransformEnd(e: { target: { x: () => number; y: () => number; rotation: () => number; scaleX: () => number; scaleY: () => number; }; }) {
+    handleTransformStart(e: any) {
+      this.showFloatMenu = false;
+    },
+    handleTransformEnd(e: any) {
       // обновить свойства элемента после трансформации
       const item = this.items.find(
         (r) => r.name === this.selectedShapeName
@@ -162,9 +250,14 @@ export default {
       item.rotation = e.target.rotation();
       item.scaleX = e.target.scaleX();
       item.scaleY = e.target.scaleY();
-      item.stroke = Konva.Util.getRandomColor(); // изменить цвет для наглядности
+
+      this.showFloatMenu = true;
+      this.updateSelectedNodeAttributs(e);
+      this.updateTransformer();
     },
-    handleStageMouseDown(e: { target: { getStage: () => any; getParent: () => { (): any; new(): any; className: string; }; name: () => any; }; }) {
+    handleStageMouseClick(e: KonvaEventObject<MouseEvent>) {
+      this.configKonva.draggable = true;
+      
       // если кликнули по сцене, очистить выбор
       if (e.target === e.target.getStage()) {
         this.selectedShapeName = '';
@@ -172,13 +265,16 @@ export default {
         return;
       }
 
+      this.showFloatMenu = true;
+      this.updateSelectedNodeAttributs(e);
+
       // если кликнули по трансформеру, ничего не делать
       const clickedOnTransformer =
-        e.target.getParent().className === 'Transformer';
+        e.target.getParent()?.className === 'Transformer';
       if (clickedOnTransformer) {
         return;
       }
-
+      
       const name = e.target.name();
       const item = this.items.find((r) => r.name === name);
       if (item) {
@@ -188,25 +284,44 @@ export default {
       }
       this.updateTransformer();
     },
+    updateSelectedNodeAttributs(e: any) {
+      this.selectedNodeAttributs.screenX = e.evt.clientX
+      this.selectedNodeAttributs.screenY = e.evt.clientY
+      this.selectedNodeAttributs.x = e.target.x()
+      this.selectedNodeAttributs.y = e.target.y()
+      this.selectedNodeAttributs.scaleX = e.target.scaleX()
+      this.selectedNodeAttributs.scaleY = e.target.scaleY()
+      this.selectedNodeAttributs.rotation = e.target.rotation()
+    },
     updateTransformer() {
       const transformerNode = (this.$refs.transformer as any).getNode();
       const stage = transformerNode.getStage();
       const { selectedShapeName } = this;
-
       const selectedNode = stage.findOne('.' + selectedShapeName);
+
       if (selectedNode === transformerNode.node()) {
         return;
       }
+      transformerNode.anchorStyleFunc(function(anchor: any) {
+      if (anchor.hasName('rotater')) {
+        anchor.fill('black');
+        anchor.cornerRadius(anchor.width() / 2);
+        anchor.stroke('black')
+      }
+      if (anchor.hasName('top-center') || anchor.hasName('bottom-center')) {
 
-      transformerNode.rotateAnchorOffset(20);
-      transformerNode.anchorCornerRadius(3);
-      transformerNode.rotateLineVisible(false);
-      transformerNode.padding(1);
+      }
+      if (anchor.hasName('middle-left') || anchor.hasName('middle-right')) {
+
+      }
+      });
 
       if (selectedNode) {
         transformerNode.nodes([selectedNode]);
+        this.isNodeEditing = true;
       } else {
         transformerNode.nodes([]);
+        this.isNodeEditing = false;
       }
     },
     addShape(shapeType: string) {
@@ -216,8 +331,8 @@ export default {
 
       let newItem: Item; // Определяем переменную здесь
 
-      stage.on('click', (e) => {
-        const pos = stage.getPointerPosition();
+      const clickHandler = (e: KonvaEventObject<MouseEvent>) => {
+        const pos = stage.getRelativePointerPosition();
         if (pos) {
           switch (shapeType) {
             case 'circle':
@@ -229,7 +344,7 @@ export default {
                 scaleX: 1,
                 scaleY: 1,
                 id: `node-${this.items.length}`,
-                stroke: Konva.Util.getRandomColor(),
+                stroke: '#212121',
                 strokeWidth: 4,
                 draggable: true,
                 name: `node-${this.items.length}`,
@@ -241,6 +356,8 @@ export default {
               newItem = {
                 x: pos.x,
                 y: pos.y,
+                offsetX: 50,
+                offsetY: 50,
                 rotation: 0,
                 width: 100,
                 height: 100,
@@ -248,7 +365,7 @@ export default {
                 scaleY: 1,
                 id: `node-${this.items.length}`,
                 text: 'test',
-                stroke: Konva.Util.getRandomColor(),
+                stroke: '#212121',
                 strokeWidth: 4,
                 draggable: true,
                 name: `node-${this.items.length}`,
@@ -262,10 +379,12 @@ export default {
                 y: pos.y,
                 rotation: 0,
                 sides: 3,
+                radius: 50,
                 scaleX: 1,
                 scaleY: 1,
                 id: `node-${this.items.length}`,
-                stroke: Konva.Util.getRandomColor(),
+                stroke: '#212121',
+                strokeWidth: 4,
                 draggable: true,
                 name: `node-${this.items.length}`,
                 shapeType: 'triangle',
@@ -279,10 +398,12 @@ export default {
           if (newItem) { // Проверяем, определена ли newItem
             this.items.push(newItem);
             stage.off('click');
+            stage.on('click', (e) => this.handleStageMouseClick(e));
             this.isCreatingActive = false;
           }
         }
-      });
+      };
+      stage.on('click', clickHandler);
     },
     addCircle() {
       this.addShape('circle');
@@ -327,6 +448,20 @@ export default {
       stage.position(newPos);
       stage.batchDraw();
       this.stageScale = newScale; // сохранить текущий масштаб
+    },
+    changeFill(color: string) {
+      const item = this.items.find(
+        (r) => r.name === this.selectedShapeName
+      );
+      if(item === undefined) return;
+      item.fill = color
+    },
+    changeStroke(color: string) {
+      const item = this.items.find(
+        (r) => r.name === this.selectedShapeName
+      );
+      if(item === undefined) return;
+      item.stroke = color
     },
     openContext(e: { evt: MouseEvent, target: Object }) {
       if (e.evt instanceof MouseEvent) {
