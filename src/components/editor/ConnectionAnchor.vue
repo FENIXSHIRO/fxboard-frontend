@@ -51,7 +51,6 @@
 </template>
 
 <script lang="ts">
-import Konva from 'konva';
 import { defineComponent, ref } from 'vue'
 
 export default defineComponent({

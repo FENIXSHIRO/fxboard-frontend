@@ -10,6 +10,7 @@
       @touchstart="handleStageMouseClick"
       @wheel="handleStageWheel"
       @mousemove="handleMouseMove"
+      @mouseup="handleMouseUp"
     >
       <!-- Фоновая сетка -->
       <v-layer>
@@ -29,7 +30,7 @@
       
       <v-layer ref="layer">
         <!-- Остальные элементы (фигуры) добавляются поверх сетки -->
-        <v-line
+        <v-arrow
           v-for="line in connections"
           :key="line.id"
           :config="{
@@ -154,6 +155,9 @@ interface ItemGroup {
 interface Line {
   id: number,
   points: any[]
+  fromId?: any,
+  toId?: any
+
 }
 
 export default {
@@ -234,6 +238,24 @@ export default {
       const pos = e.target.getStage().getRelativePointerPosition()
       const lastLine = this.connections[this.connections.length - 1];
       lastLine.points = [lastLine.points[0], lastLine.points[1], pos.x, pos.y];
+    },
+    handleMouseUp(e: any) {
+      if (!this.drawningLine) {
+        return
+      }
+      if (!(e.target?.getParent() instanceof Konva.Group)) {
+        this.connections.pop();
+        this.drawningLine = false;
+        return
+      }
+      this.drawningLine = false;
+      const lastLine = this.connections[this.connections.length - 1];
+      lastLine.points = [
+        lastLine.points[0],
+        lastLine.points[1],
+        e.target.getParent().x(),
+        e.target.getParent().y()
+      ];
     },
     getShapeComponent(shapeType: string) {
       switch (shapeType) {
@@ -316,6 +338,20 @@ export default {
       this.updateSelectedNodeAttributs(e);
       this.updateTransformer();
     },
+    updateConnections() {
+      this.connections.forEach((conn) => {
+        const fromGroup = this.groups.find(group => group.id === conn.fromId);
+        const toGroup = this.groups.find(group => group.id === conn.toId);
+        if (fromGroup && toGroup) {
+          conn.points = [
+            fromGroup.x + fromGroup.width / 2,
+            fromGroup.y + fromGroup.height / 2,
+            toGroup.x + toGroup.width / 2,
+            toGroup.y + toGroup.height / 2
+          ];
+        }
+      });
+    },
     updateSelectedNodeAttributs(e: any) {
       let target = e.target
       if(e.target.getParent() instanceof Konva.Group) {
@@ -333,6 +369,8 @@ export default {
       this.selectedNodeAttributs.scaleX = target.scaleX()
       this.selectedNodeAttributs.scaleY = target.scaleY()
       this.selectedNodeAttributs.rotation = target.rotation()
+
+      this.updateConnections();
 
       if(group === undefined) return;
       if(!group.text) return
