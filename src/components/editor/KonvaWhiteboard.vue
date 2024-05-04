@@ -258,6 +258,7 @@ export default {
         this.groups.push(group);
       }
       this.showFloatMenu = false;
+      this.updateSelectedNodeAttributs(e);
     },
     handleDragend(e: any) {
       this.dragItemId = null;
@@ -292,10 +293,6 @@ export default {
         this.updateTransformer();
         return;
       }
-
-      this.showFloatMenu = true;
-      this.updateSelectedNodeAttributs(e);
-
       // если кликнули по трансформеру, ничего не делать
       const clickedOnTransformer =
         e.target.getParent()?.className === 'Transformer';
@@ -310,6 +307,8 @@ export default {
       } else {
         this.selectedGroupName = '';
       }
+      this.showFloatMenu = true;
+      this.updateSelectedNodeAttributs(e);
       this.updateTransformer();
     },
     updateSelectedNodeAttributs(e: any) {
