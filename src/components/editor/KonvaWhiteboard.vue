@@ -250,7 +250,9 @@ export default {
     handleDragstart(e: any) {
       // сохранить идентификатор перетаскиваемого элемента
       this.dragItemId = e.target.id();
-      // поднять элемент в списке
+      
+      const name = e.target.name();
+
       const group = this.groups.find((i) => i.id === this.dragItemId);
       if (group) {
         const index = this.groups.indexOf(group);
@@ -258,7 +260,10 @@ export default {
         this.groups.push(group);
       }
       this.showFloatMenu = false;
-      this.updateSelectedNodeAttributs(e);
+      if(this.selectedGroupName !== name) {
+        this.selectedGroupName = name;
+        this.updateTransformer();
+      }
     },
     handleDragend(e: any) {
       this.dragItemId = null;
