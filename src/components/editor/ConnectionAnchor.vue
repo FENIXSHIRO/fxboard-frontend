@@ -8,7 +8,7 @@
   :perfectDrawEnabled="false"
   @mouseover="overAnchor"
   @mouseout="outAnchor"
-  @mousedown="test"
+  @mousedown="createConnection($event, 'top', {x: 0, y: verticalHalf*newScaleY})"
   ref="top"
 />
 <v-circle
@@ -20,7 +20,7 @@
   :perfectDrawEnabled="false"
   @mouseover="overAnchor"
   @mouseout="outAnchor"
-  @mousedown="test"
+  @mousedown="createConnection($event, 'bottom', {x: 0, y: -verticalHalf*newScaleY})"
   ref="bottom"
 />
 <v-circle
@@ -33,7 +33,7 @@
   :perfectDrawEnabled="false"
   @mouseover="overAnchor"
   @mouseout="outAnchor"
-  @mousedown="test"
+  @mousedown="createConnection($event, 'right', {x: -horizontalHalf*newScaleX, y: 0})"
   ref="right"
 />
 <v-circle
@@ -45,7 +45,7 @@
   :perfectDrawEnabled="false"
   @mouseover="overAnchor"
   @mouseout="outAnchor"
-  @mousedown="test"
+  @mousedown="createConnection($event, 'left', {x: horizontalHalf*newScaleX, y: 0})"
   ref="left"
 />
 </template>
@@ -105,9 +105,9 @@ export default defineComponent({
   computed: {
   },
   methods: {
-    test(e: any) {
+    createConnection(e: any, side: string, offset:{x: number, y:number}) {
       e.target.fill('#80d0ff');
-      this.$emit('connectNodes', e, this.nodeId, 50);
+      this.$emit('connectNodes', e, this.nodeId, side, offset);
     },
     overAnchor(e: any) {
       e.target.fill('#eee');

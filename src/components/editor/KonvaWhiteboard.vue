@@ -170,11 +170,12 @@ interface ItemGroup {
 }
 
 interface Line {
-  id: number,
+  id: number
   points: any[]
-  fromId?: any,
-  toId?: any
-
+  fromId?: string
+  toId?: string
+  fromSide: string
+  toSide: string
 }
 
 export default {
@@ -241,13 +242,63 @@ export default {
   computed: {
   },
   methods: {
-    createConnection(e: any, nodeId: any, offset: any) {
+    getShapeComponent(shapeType: string) {
+      switch (shapeType) {
+        case 'circle':
+          return 'v-circle';
+        case 'square':
+          return 'v-rect';
+        case 'triangle':
+          return 'v-regular-polygon';
+        default:
+          return 'v-circle'; // по умолчанию, возвращаем круг
+      }
+    },
+    getConnectionInputPosBySide(target: any, side: string, newPoints: any) {
+      let node = target
+      if(target.getParent() instanceof Konva.Group) (
+        node = target.getParent()
+      )
+      const group = this.groups.find((i) => i.id === target.id());
+      
+      if(side === 'top'){
+        newPoints.push(
+          node.x(),
+          node.y() - (group && group.connectionInput? group.connectionInput[0].x : target.x())
+        )
+        return newPoints
+      }
+      if(side === 'bottom'){
+        newPoints.push(
+          node.x(),
+          node.y() + (group && group.connectionInput? group.connectionInput[2].y/2 : target.y()/2)
+        )
+        return newPoints
+      }
+      if(side === 'right'){
+        newPoints.push(
+          node.x() + (group && group.connectionInput? group.connectionInput[1].x/2 : target.x()/2),
+          node.y()
+        )
+        return newPoints
+      }
+      if(side === 'left'){
+        newPoints.push(
+          node.x() - (group && group.connectionInput? group.connectionInput[3].y : target.y()),
+          node.y()
+        )
+        return newPoints
+      }
+    },
+    createConnection(e: any, nodeId: any, side: string, offset:{x: number, y: number}) {
       this.drawningLine = true;
       this.configKonva.draggable = false;
       this.connections.push({
         id: Date.now(),
-        points: [e.target.x() + offset, e.target.y()],
-        fromId: nodeId
+        points: [e.target.x() - offset.x, e.target.y() - offset.y],
+        fromId: nodeId,
+        fromSide: side,
+        toSide: ""
       });
     },
     handleMouseMove(e: any) {
@@ -261,73 +312,25 @@ export default {
     },
     handleMouseUp(e: any) {
       if (!this.drawningLine) {
-        return
+          return;
       }
       const idRegex = /connectionInput-/;
-      const idRegexTop = /connectionInput-top/;
-      const idRegexRight = /connectionInput-right/;
-      const idRegexBottom = /connectionInput-bottom/;
-      const idRegexLeft = /connectionInput-left/;
       if (!(idRegex.test(e.target.id()))) {
-        this.connections.pop();
-        this.drawningLine = false;
-        return
+          this.connections.pop();
+          this.drawningLine = false;
+          return;
       }
       this.drawningLine = false;
 
-      console.log(e.target.x())
-      console.log(e.target.y())
+      const idParts = e.target.id().split('-');
+      const idType = idParts[1];
 
       const lastLine = this.connections[this.connections.length - 1];
-      lastLine.toId = e.target.getParent().id()
-      if(idRegexTop.test(e.target.id())) {
-        lastLine.points = [
-          lastLine.points[0],
-          lastLine.points[1],
-          e.target.getParent().x(),
-          e.target.getParent().y() - e.target.x()
-        ];
-        return
-      }
-      if(idRegexRight.test(e.target.id())) {
-        lastLine.points = [
-          lastLine.points[0],
-          lastLine.points[1],
-          e.target.getParent().x() + e.target.x()/2,
-          e.target.getParent().y()
-        ];
-        return
-      }
-      if(idRegexBottom.test(e.target.id())) {
-        lastLine.points = [
-          lastLine.points[0],
-          lastLine.points[1],
-          e.target.getParent().x(),
-          e.target.getParent().y() + e.target.y()/2
-        ];
-        return
-      }
-      if(idRegexLeft.test(e.target.id())) {
-        lastLine.points = [
-          lastLine.points[0],
-          lastLine.points[1],
-          e.target.getParent().x() - e.target.y(),
-          e.target.getParent().y()
-        ];
-        return
-      }
-    },
-    getShapeComponent(shapeType: string) {
-      switch (shapeType) {
-        case 'circle':
-          return 'v-circle';
-        case 'square':
-          return 'v-rect';
-        case 'triangle':
-          return 'v-regular-polygon';
-        default:
-          return 'v-circle'; // по умолчанию, возвращаем круг
-      }
+      lastLine.toId = e.target.getParent().id();
+      lastLine.toSide = idType;
+      
+      let newPoints = [lastLine.points[0], lastLine.points[1]];
+      lastLine.points = this.getConnectionInputPosBySide(e.target, idType, newPoints)
     },
     handleDragstart(e: any) {
       // сохранить идентификатор перетаскиваемого элемента
@@ -405,21 +408,15 @@ export default {
         if (fromGroup && toGroup) {
 
           if(target.id() == fromGroup.id) {
-            conn.points = [
-              target.x() + fromGroup.width / 2,
-              target.y(),
-              conn.points[2],
-              conn.points[3]
-            ];
+            let newPoints  = [] as any
+            newPoints = this.getConnectionInputPosBySide(target, conn.fromSide, newPoints)
+            newPoints.push(conn.points[2], conn.points[3])
+            conn.points = newPoints
             return
           }
           if(target.id() == toGroup.id) {
-            conn.points = [
-              conn.points[0],
-              conn.points[1],
-              target.x() + fromGroup.width / 2,
-              target.y()
-            ];
+            let newPoints = [conn.points[0], conn.points[1]]
+            conn.points = this.getConnectionInputPosBySide(target, conn.toSide, newPoints)
             return
           }
         }
