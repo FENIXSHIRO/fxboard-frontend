@@ -307,21 +307,59 @@ export default {
       if (!this.drawningLine) {
         return
       }
-      if (!(e.target?.getParent() instanceof Konva.Group)) {
+      const idRegex = /connectionInput-/;
+      const idRegexTop = /connectionInput-top/;
+      const idRegexRight = /connectionInput-right/;
+      const idRegexBottom = /connectionInput-bottom/;
+      const idRegexLeft = /connectionInput-left/;
+      if (!(idRegex.test(e.target.id()))) {
         this.connections.pop();
         this.drawningLine = false;
         return
       }
       this.drawningLine = false;
 
+      console.log(e.target.x())
+      console.log(e.target.y())
+
       const lastLine = this.connections[this.connections.length - 1];
       lastLine.toId = e.target.getParent().id()
-      lastLine.points = [
-        lastLine.points[0],
-        lastLine.points[1],
-        e.target.getParent().x(),
-        e.target.getParent().y()
-      ];
+      if(idRegexTop.test(e.target.id())) {
+        lastLine.points = [
+          lastLine.points[0],
+          lastLine.points[1],
+          e.target.getParent().x(),
+          e.target.getParent().y() - e.target.x()
+        ];
+        return
+      }
+      if(idRegexRight.test(e.target.id())) {
+        lastLine.points = [
+          lastLine.points[0],
+          lastLine.points[1],
+          e.target.getParent().x() + e.target.x()/2,
+          e.target.getParent().y()
+        ];
+        return
+      }
+      if(idRegexBottom.test(e.target.id())) {
+        lastLine.points = [
+          lastLine.points[0],
+          lastLine.points[1],
+          e.target.getParent().x(),
+          e.target.getParent().y() + e.target.y()/2
+        ];
+        return
+      }
+      if(idRegexLeft.test(e.target.id())) {
+        lastLine.points = [
+          lastLine.points[0],
+          lastLine.points[1],
+          e.target.getParent().x() - e.target.y(),
+          e.target.getParent().y()
+        ];
+        return
+      }
     },
     getShapeComponent(shapeType: string) {
       switch (shapeType) {
