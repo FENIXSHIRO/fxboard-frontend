@@ -59,33 +59,10 @@
             :config="group.text"
           />
           <v-circle
+          v-for="connectionInput in group?.connectionInput"
           v-if="drawningLine"
-          :id="connectionInput.sides.top.id"
-          :x="connectionInput.sides.top.x"
-          :y="connectionInput.sides.top.y"
-          :config="connectionInput.config"
+          :config="connectionInput"
            />
-          <v-circle
-          :id="connectionInput.sides.right.id"
-          :x="connectionInput.sides.right.x"
-          :y="connectionInput.sides.right.y"
-          v-if="drawningLine"
-          :config="connectionInput.config"
-          />
-          <v-circle
-          :id="connectionInput.sides.bottom.id"
-          :x="connectionInput.sides.bottom.x"
-          :y="connectionInput.sides.bottom.y"
-          v-if="drawningLine"
-          :config="connectionInput.config"
-          />
-          <v-circle
-          :id="connectionInput.sides.left.id"
-          :x="connectionInput.sides.left.x"
-          :y="connectionInput.sides.left.y"
-          v-if="drawningLine"
-          :config="connectionInput.config"
-          />
         </v-group>
         <v-transformer
           :config="transformerConfig"
@@ -179,6 +156,17 @@ interface ItemGroup {
     scaleX?: number,
     scaleY?: number
   }
+  connectionInput?: {
+    id: string,
+    x: number,
+    y: number,
+    radius: number,
+    fill: string,
+    stroke: string,
+    strokeWidth: number,
+    scaleX: number,
+    scaleY: number,
+  }[]
 }
 
 interface Line {
@@ -222,38 +210,6 @@ export default {
         width: 100,
         height: 100,
         radius: 50
-      },
-      connectionInput: {
-        sides:{
-          top: {
-            id: '',
-            x: 0,
-            y: 0,
-          },
-          right: {
-            id: '',
-            x: 0,
-            y: 0,
-          },
-          bottom: {
-            id: '',
-            x: 0,
-            y: 0,
-          },
-          left: {
-            id: '',
-            x: 0,
-            y: 0,
-          },
-        },
-        config: {
-          radius: 7,
-          fill: '#ddd',
-          stroke: '#555',
-          strokeWidth: 1,
-          scaleX: 1,
-          scaleY: 1,
-        }
       },
       connections: [] as Line[],
       drawningLine: false,
@@ -491,15 +447,18 @@ export default {
 
       this.updateConnections(target);
 
-      this.connectionInput.config.scaleX = 1/Math.abs(target.scaleX())
-      this.connectionInput.config.scaleY = 1/Math.abs(target.scaleX())
-
       if(group === undefined) return;
       if(!group.text) return
       group.text.scaleX = 1/Math.abs(target.scaleX())
       group.text.scaleY = 1/Math.abs(target.scaleY())
       group.text.width = this.defaultParameters.width * Math.abs(target.scaleX())
       group.text.height = this.defaultParameters.height * Math.abs(target.scaleY())
+      if(!group.connectionInput) return
+      for (let index = 0; index < 4; index++) {
+        group.connectionInput[index].scaleX = 1/Math.abs(target.scaleX())
+        group.connectionInput[index].scaleY = 1/Math.abs(target.scaleY())
+        
+      }
     },
     updateTransformer() {
       const transformerNode = (this.$refs.transformer as any).getNode();
@@ -561,7 +520,8 @@ export default {
                   radius: this.defaultParameters.radius,
                   shapeType: 'circle',
                   strokeScaleEnabled: false
-                }
+                },
+                connectionInput: []
               };
               break;
             case 'square':
@@ -595,7 +555,8 @@ export default {
                   height: 100,
                   padding: 20,
                   align: 'center',
-                }
+                },
+                connectionInput: []
               };
               break;
             case 'triangle':
@@ -617,11 +578,54 @@ export default {
                   radius: this.defaultParameters.radius,
                   shapeType: 'triangle',
                   strokeScaleEnabled: false
-                }
+                },
+                connectionInput: []
               };
               break;
             default:
               break;
+          }
+
+          for (let index = 0; index < 4; index++) {
+            let connectionInputId = ''
+            let connectionInputX = 0
+            let connectionInputY = 0
+
+            if(shapeType === 'square') {
+              connectionInputX = newGroup.width/2
+              connectionInputY = newGroup.width/2
+            }
+            switch(index) {
+              case 0: // top
+              connectionInputId = `connectionInput-top-${this.groups.length}`
+              connectionInputY -= (newGroup.item.radius ? newGroup.item.radius : newGroup.height/2) * newGroup.scaleY
+              break;
+              case 1: // right
+              connectionInputId = `connectionInput-right-${this.groups.length}`
+              connectionInputX += (newGroup.item.radius ? newGroup.item.radius : newGroup.width/2) * newGroup.scaleX
+              break;
+              case 2: // bottom
+              connectionInputId = `connectionInput-bottom-${this.groups.length}`
+              connectionInputY += (newGroup.item.radius ? newGroup.item.radius : newGroup.height/2) * newGroup.scaleY
+              break;
+              case 3: // left
+              connectionInputId = `connectionInput-left-${this.groups.length}`
+              connectionInputX -= (newGroup.item.radius ? newGroup.item.radius : newGroup.width/2) * newGroup.scaleX
+              break;
+              default:
+              break;
+            }
+            newGroup.connectionInput?.push({
+              id: connectionInputId,
+              x: connectionInputX,
+              y: connectionInputY,
+              radius: 7,
+              fill: '#ddd',
+              stroke: '#555',
+              strokeWidth: 1,
+              scaleX: 1,
+              scaleY: 1,
+            })       
           }
 
           if (newGroup) { // Проверяем, определена ли newItem
@@ -630,18 +634,6 @@ export default {
             stage.on('click', (e) => this.handleStageMouseClick(e));
             this.isCreatingActive = false;
           }
-
-          for (const [key, value] of Object.entries(this.connectionInput.sides)) {
-            value.id = `connectionInput-${key}-${this.groups.length}`
-            if(shapeType === 'square') {
-              value.x = newGroup.width/2
-              value.y = newGroup.height/2
-            }
-          }
-          this.connectionInput.sides.top.y -= (newGroup.item.radius ? newGroup.item.radius : newGroup.height/2) * newGroup.scaleY
-          this.connectionInput.sides.right.x += (newGroup.item.radius ? newGroup.item.radius : newGroup.width/2) * newGroup.scaleX
-          this.connectionInput.sides.bottom.y += (newGroup.item.radius ? newGroup.item.radius : newGroup.height/2) * newGroup.scaleY
-          this.connectionInput.sides.left.x -= (newGroup.item.radius ? newGroup.item.radius : newGroup.width/2) * newGroup.scaleX
         }
       };
       stage.on('click', clickHandler);
