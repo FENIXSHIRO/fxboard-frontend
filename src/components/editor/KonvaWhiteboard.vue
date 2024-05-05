@@ -58,6 +58,22 @@
             v-if="group.text"
             :config="group.text"
           />
+          <v-circle
+          v-if="drawningLine"
+          :config="connectionInput.top"
+           />
+          <v-circle
+          v-if="drawningLine"
+          :config="connectionInput.right"
+          />
+          <v-circle
+          v-if="drawningLine"
+          :config="connectionInput.bottom"
+          />
+          <v-circle
+          v-if="drawningLine"
+          :config="connectionInput.left"
+          />
         </v-group>
         <v-transformer
           :config="transformerConfig"
@@ -71,7 +87,7 @@
           :scaleY="selectedNodeAttributs.scaleY"
           :rotation="selectedNodeAttributs.rotation"
           :nodeId="selectedNodeAttributs.nodeId"
-          @connectNodes="test"
+          @connectNodes="createConnection"
         />
       </v-layer>
     </v-stage>
@@ -195,6 +211,44 @@ export default {
         height: 100,
         radius: 50
       },
+      connectionInput: {
+        top: {
+          id: '',
+          x: 0,
+          y: 0,
+          radius: 7,
+          fill: '#ddd',
+          stroke: '#555',
+          strokeWidth: 1
+        },
+        right: {
+          id: '',
+          x: 0,
+          y: 0,
+          radius: 7,
+          fill: '#ddd',
+          stroke: '#555',
+          strokeWidth: 1
+        },
+        bottom: {
+          id: '',
+          x: 0,
+          y: 0,
+          radius: 7,
+          fill: '#ddd',
+          stroke: '#555',
+          strokeWidth: 1
+        },
+        left: {
+          id: '',
+          x: 0,
+          y: 0,
+          radius: 7,
+          fill: '#ddd',
+          stroke: '#555',
+          strokeWidth: 1
+        }
+      },
       connections: [] as Line[],
       drawningLine: false,
       selectedGroupName: '',
@@ -225,7 +279,7 @@ export default {
   computed: {
   },
   methods: {
-    test(e: any, nodeId: any, offset: any) {
+    createConnection(e: any, nodeId: any, offset: any) {
       this.drawningLine = true;
       this.configKonva.draggable = false;
       this.connections.push({
@@ -512,6 +566,7 @@ export default {
                   stroke: '#212121',
                   strokeWidth: 4,
                   sides: 3,
+                  radius: this.defaultParameters.radius,
                   shapeType: 'triangle',
                   strokeScaleEnabled: false
                 }
@@ -527,6 +582,18 @@ export default {
             stage.on('click', (e) => this.handleStageMouseClick(e));
             this.isCreatingActive = false;
           }
+
+          for (const [key, value] of Object.entries(this.connectionInput)) {
+            value.id = `connectionInput-${key}-${this.groups.length}`
+            if(shapeType === 'square') {
+              value.x = newGroup.width/2
+              value.y = newGroup.height/2
+            }
+          }
+          this.connectionInput.top.y -= newGroup.height/2 * newGroup.scaleY
+          this.connectionInput.right.x += newGroup.width/2 * newGroup.scaleX
+          this.connectionInput.bottom.y += newGroup.height/2 * newGroup.scaleY
+          this.connectionInput.left.x -= newGroup.width/2 * newGroup.scaleX
         }
       };
       stage.on('click', clickHandler);
