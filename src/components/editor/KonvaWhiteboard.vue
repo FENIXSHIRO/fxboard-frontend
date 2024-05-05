@@ -60,19 +60,31 @@
           />
           <v-circle
           v-if="drawningLine"
-          :config="connectionInput.top"
+          :id="connectionInput.sides.top.id"
+          :x="connectionInput.sides.top.x"
+          :y="connectionInput.sides.top.y"
+          :config="connectionInput.config"
            />
           <v-circle
+          :id="connectionInput.sides.right.id"
+          :x="connectionInput.sides.right.x"
+          :y="connectionInput.sides.right.y"
           v-if="drawningLine"
-          :config="connectionInput.right"
+          :config="connectionInput.config"
           />
           <v-circle
+          :id="connectionInput.sides.bottom.id"
+          :x="connectionInput.sides.bottom.x"
+          :y="connectionInput.sides.bottom.y"
           v-if="drawningLine"
-          :config="connectionInput.bottom"
+          :config="connectionInput.config"
           />
           <v-circle
+          :id="connectionInput.sides.left.id"
+          :x="connectionInput.sides.left.x"
+          :y="connectionInput.sides.left.y"
           v-if="drawningLine"
-          :config="connectionInput.left"
+          :config="connectionInput.config"
           />
         </v-group>
         <v-transformer
@@ -212,41 +224,35 @@ export default {
         radius: 50
       },
       connectionInput: {
-        top: {
-          id: '',
-          x: 0,
-          y: 0,
-          radius: 7,
-          fill: '#ddd',
-          stroke: '#555',
-          strokeWidth: 1
+        sides:{
+          top: {
+            id: '',
+            x: 0,
+            y: 0,
+          },
+          right: {
+            id: '',
+            x: 0,
+            y: 0,
+          },
+          bottom: {
+            id: '',
+            x: 0,
+            y: 0,
+          },
+          left: {
+            id: '',
+            x: 0,
+            y: 0,
+          },
         },
-        right: {
-          id: '',
-          x: 0,
-          y: 0,
+        config: {
           radius: 7,
           fill: '#ddd',
           stroke: '#555',
-          strokeWidth: 1
-        },
-        bottom: {
-          id: '',
-          x: 0,
-          y: 0,
-          radius: 7,
-          fill: '#ddd',
-          stroke: '#555',
-          strokeWidth: 1
-        },
-        left: {
-          id: '',
-          x: 0,
-          y: 0,
-          radius: 7,
-          fill: '#ddd',
-          stroke: '#555',
-          strokeWidth: 1
+          strokeWidth: 1,
+          scaleX: 1,
+          scaleY: 1,
         }
       },
       connections: [] as Line[],
@@ -434,17 +440,21 @@ export default {
       const group = this.groups.find(
         (r) => r.name === this.selectedGroupName
       );
-
-      this.selectedNodeAttributs.screenX = e.evt.clientX
-      this.selectedNodeAttributs.screenY = e.evt.clientY
-      this.selectedNodeAttributs.x = target.x()
-      this.selectedNodeAttributs.y = target.y()
-      this.selectedNodeAttributs.scaleX = target.scaleX()
-      this.selectedNodeAttributs.scaleY = target.scaleY()
-      this.selectedNodeAttributs.rotation = target.rotation()
-      this.selectedNodeAttributs.nodeId = target.id()
+      this.selectedNodeAttributs = {
+        screenX: e.evt.clientX,
+        screenY: e.evt.clientY,
+        x: target.x(),
+        y: target.y(),
+        scaleX: target.scaleX(),
+        scaleY: target.scaleY(),
+        rotation: target.rotation(),
+        nodeId: target.id()
+      }
 
       this.updateConnections(target);
+
+      this.connectionInput.config.scaleX = 1/Math.abs(target.scaleX())
+      this.connectionInput.config.scaleY = 1/Math.abs(target.scaleX())
 
       if(group === undefined) return;
       if(!group.text) return
@@ -583,17 +593,17 @@ export default {
             this.isCreatingActive = false;
           }
 
-          for (const [key, value] of Object.entries(this.connectionInput)) {
+          for (const [key, value] of Object.entries(this.connectionInput.sides)) {
             value.id = `connectionInput-${key}-${this.groups.length}`
             if(shapeType === 'square') {
               value.x = newGroup.width/2
               value.y = newGroup.height/2
             }
           }
-          this.connectionInput.top.y -= newGroup.height/2 * newGroup.scaleY
-          this.connectionInput.right.x += newGroup.width/2 * newGroup.scaleX
-          this.connectionInput.bottom.y += newGroup.height/2 * newGroup.scaleY
-          this.connectionInput.left.x -= newGroup.width/2 * newGroup.scaleX
+          this.connectionInput.sides.top.y -= (newGroup.item.radius ? newGroup.item.radius : newGroup.height/2) * newGroup.scaleY
+          this.connectionInput.sides.right.x += (newGroup.item.radius ? newGroup.item.radius : newGroup.width/2) * newGroup.scaleX
+          this.connectionInput.sides.bottom.y += (newGroup.item.radius ? newGroup.item.radius : newGroup.height/2) * newGroup.scaleY
+          this.connectionInput.sides.left.x -= (newGroup.item.radius ? newGroup.item.radius : newGroup.width/2) * newGroup.scaleX
         }
       };
       stage.on('click', clickHandler);
