@@ -70,6 +70,7 @@
           :scaleX="selectedNodeAttributs.scaleX"
           :scaleY="selectedNodeAttributs.scaleY"
           :rotation="selectedNodeAttributs.rotation"
+          :nodeId="selectedNodeAttributs.nodeId"
           @connectNodes="test"
         />
       </v-layer>
@@ -217,18 +218,20 @@ export default {
         rotation: 0,
         scaleX: 1,
         scaleY: 1,
+        nodeId: ''
       }
     };
   },
   computed: {
   },
   methods: {
-    test(e: any, offset: any) {
+    test(e: any, nodeId: any, offset: any) {
       this.drawningLine = true;
       this.configKonva.draggable = false;
       this.connections.push({
         id: Date.now(),
-        points: [e.target.x() + offset, e.target.y()]
+        points: [e.target.x() + offset, e.target.y()],
+        fromId: nodeId
       });
     },
     handleMouseMove(e: any) {
@@ -238,6 +241,7 @@ export default {
       const pos = e.target.getStage().getRelativePointerPosition()
       const lastLine = this.connections[this.connections.length - 1];
       lastLine.points = [lastLine.points[0], lastLine.points[1], pos.x, pos.y];
+
     },
     handleMouseUp(e: any) {
       if (!this.drawningLine) {
@@ -249,7 +253,9 @@ export default {
         return
       }
       this.drawningLine = false;
+
       const lastLine = this.connections[this.connections.length - 1];
+      lastLine.toId = e.target.getParent().id()
       lastLine.points = [
         lastLine.points[0],
         lastLine.points[1],
@@ -338,17 +344,30 @@ export default {
       this.updateSelectedNodeAttributs(e);
       this.updateTransformer();
     },
-    updateConnections() {
+    updateConnections(target: Konva.Group) {
       this.connections.forEach((conn) => {
         const fromGroup = this.groups.find(group => group.id === conn.fromId);
         const toGroup = this.groups.find(group => group.id === conn.toId);
         if (fromGroup && toGroup) {
-          conn.points = [
-            fromGroup.x + fromGroup.width / 2,
-            fromGroup.y + fromGroup.height / 2,
-            toGroup.x + toGroup.width / 2,
-            toGroup.y + toGroup.height / 2
-          ];
+
+          if(target.id() == fromGroup.id) {
+            conn.points = [
+              target.x() + fromGroup.width / 2,
+              target.y(),
+              conn.points[2],
+              conn.points[3]
+            ];
+            return
+          }
+          if(target.id() == toGroup.id) {
+            conn.points = [
+              conn.points[0],
+              conn.points[1],
+              target.x() + fromGroup.width / 2,
+              target.y()
+            ];
+            return
+          }
         }
       });
     },
@@ -369,8 +388,9 @@ export default {
       this.selectedNodeAttributs.scaleX = target.scaleX()
       this.selectedNodeAttributs.scaleY = target.scaleY()
       this.selectedNodeAttributs.rotation = target.rotation()
+      this.selectedNodeAttributs.nodeId = target.id()
 
-      this.updateConnections();
+      this.updateConnections(target);
 
       if(group === undefined) return;
       if(!group.text) return

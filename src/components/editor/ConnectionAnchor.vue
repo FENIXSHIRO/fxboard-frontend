@@ -79,6 +79,7 @@ export default defineComponent({
     scaleY: { type: Number, default: 1 },
     rotation: { type: Number, default: 0 },
     stageScale: { type: Number, default: 1 },
+    nodeId: { type: String, required: true },
   },
   watch: {
     x(newValue) {
@@ -106,7 +107,7 @@ export default defineComponent({
   methods: {
     test(e: any) {
       e.target.fill('#80d0ff');
-      this.$emit('connectNodes', e, 50);
+      this.$emit('connectNodes', e, this.nodeId, 50);
     },
     overAnchor(e: any) {
       e.target.fill('#eee');
