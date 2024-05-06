@@ -391,7 +391,6 @@ export default {
       
       // если кликнули по сцене, очистить выбор
       if (e.target === e.target.getStage()) {
-        console.log((e.target.getStage() as Konva.Stage).getAbsolutePosition())
         this.selectedGroupName = '';
         this.updateTransformer();
         return;
