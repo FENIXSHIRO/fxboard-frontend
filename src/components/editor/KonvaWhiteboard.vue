@@ -58,6 +58,17 @@
             v-if="group.text"
             :config="group.text"
           />
+          <textarea 
+            v-if="group.text"
+            :value="group.text?.text"
+            style="position: absolute;"
+            :style="{
+              top: group.y + 'px',
+              left: group.x + 'px',
+              height: group.text?.height,
+              width: group.text?.width
+          }"
+          />
           <v-circle
           v-for="connectionInput in group?.connectionInput"
           v-if="drawningLine"
@@ -87,11 +98,12 @@
     />
     <FloatMenu 
       v-if="isNodeEditing && showFloatMenu"
-      :targetX="selectedNodeAttributs.screenX"
-      :targetY="selectedNodeAttributs.screenY"
+      :targetX="selectedNodeAttributs.x"
+      :targetY="selectedNodeAttributs.y"
       :scaleX="selectedNodeAttributs.scaleX"
       :scaleY="selectedNodeAttributs.scaleY"
       :rotation="selectedNodeAttributs.rotation"
+      :stagePos="selectedNodeAttributs.stagePos"
       @changeStroke="changeStroke"
       @changeFill="changeFill"
     />
@@ -228,6 +240,7 @@ export default {
       selectedShape: null as Konva.Shape | Object | null,
       showFloatMenu: false,
       selectedNodeAttributs: {
+        stagePos: {x: 0, y: 0},
         x: 0,
         y: 0,
         screenX: 0,
@@ -379,6 +392,7 @@ export default {
       
       // если кликнули по сцене, очистить выбор
       if (e.target === e.target.getStage()) {
+        console.log((e.target.getStage() as Konva.Stage).getAbsolutePosition())
         this.selectedGroupName = '';
         this.updateTransformer();
         return;
@@ -428,10 +442,13 @@ export default {
         target = e.target.getParent()
       }
 
+      const stage = (this.$refs.stage as Konva.Stage).getStage();
+
       const group = this.groups.find(
         (r) => r.name === this.selectedGroupName
       );
       this.selectedNodeAttributs = {
+        stagePos: stage.getAbsolutePosition(),
         screenX: e.evt.clientX,
         screenY: e.evt.clientY,
         x: target.x(),

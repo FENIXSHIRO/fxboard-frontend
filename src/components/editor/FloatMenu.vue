@@ -1,6 +1,6 @@
 <template>
   <div 
-  :style="{ top: positionY + 'px', left: targetX + 'px' }"
+  :style="{ top: positionY + 'px', left: positionX + 'px' }"
   class="absolute translate-x-[-50%] bg-[#eee] rounded-md shadow-md *:min-h-[30px] *:min-w-[30px] *:rounded-md *:m-[5px]"
   >
     <PopoverMenu>
@@ -93,6 +93,7 @@ export default defineComponent({
       newScaleX: this.scaleX,
       newScaleY: this.scaleY,
       newRotation: this.rotation,
+      newStagePos: this.stagePos,
       yOffsetByScaleX: false,
       color1: '#409EFF',
       buttonColors: [
@@ -109,6 +110,7 @@ export default defineComponent({
     scaleX: {type: Number || String, required: true },
     scaleY: {type: Number || String, required: true },
     rotation: {type: Number || String, required: true },
+    stagePos: {type: Object as () => { x: number, y: number }, required: true },
   },
   emits: ['changeFill', 'changeStroke'],
   watch: {
@@ -126,15 +128,23 @@ export default defineComponent({
     },
     rotation(newValue) {
       this.newRotation = newValue
+    },
+    stagePos(newValue) {
+      this.newStagePos = newValue
     }
   },
   computed: {
+    positionX() {
+      return this.newTargetX + this.newStagePos.x
+    },
     positionY() {
+      let yPos = 0
       if(Math.abs(this.newRotation) > 50 && Math.abs(this.newRotation) < 135) {
-        return this.newTargetY - 50 * this.newScaleX - 95
+        yPos = this.newTargetY - 50 * this.newScaleX - 95
       } else {
-        return this.newTargetY - 50 * this.newScaleY - 95
+        yPos = this.newTargetY - 50 * this.newScaleY - 95
       }
+      return yPos + this.newStagePos.y
     }
   },
   methods: {
