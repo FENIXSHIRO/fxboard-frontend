@@ -11,6 +11,7 @@
       @wheel="handleStageWheel"
       @mousemove="handleMouseMove"
       @mouseup="handleMouseUp"
+      @dragstart="dragStageStart"
     >
       <!-- Фоновая сетка -->
       <v-layer>
@@ -728,6 +729,9 @@ export default {
       if(this.selectedShape instanceof Konva.Group)
       this.selectedShape.destroy();
       this.updateTransformer();
+    },
+    dragStageStart() {
+      this.showFloatMenu = false
     }
   },
   mounted() {
