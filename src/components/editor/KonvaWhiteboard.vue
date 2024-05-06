@@ -244,8 +244,6 @@ export default {
         stagePos: {x: 0, y: 0},
         x: 0,
         y: 0,
-        screenX: 0,
-        screenY: 0,
         rotation: 0,
         scaleX: 1,
         scaleY: 1,
@@ -450,8 +448,6 @@ export default {
       );
       this.selectedNodeAttributs = {
         stagePos: stage.getAbsolutePosition(),
-        screenX: e.evt.clientX,
-        screenY: e.evt.clientY,
         x: target.x(),
         y: target.y(),
         scaleX: target.scaleX(),
