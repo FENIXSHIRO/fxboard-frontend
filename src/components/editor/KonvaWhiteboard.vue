@@ -43,10 +43,10 @@
           v-for="group in groups"
           :key="group.id"
           :config="group"
-          @dragstart="handleDragstart"
-          @dragend="handleDragend"
-          @transformstart="handleTransformStart"
-          @transformend="handleTransformEnd"
+          @dragstart="handleGroupDragstart"
+          @dragend="handleGroupDragend"
+          @transformstart="handleGroupTransformStart"
+          @transformend="handleGroupTransformEnd"
           @contextmenu="openContext($event)"
           @dragmove="updateSelectedNodeAttributs"
           @transform="updateSelectedNodeAttributs"
@@ -333,7 +333,7 @@ export default {
       let newPoints = [lastLine.points[0], lastLine.points[1]];
       lastLine.points = this.getConnectionInputPosBySide(e.target, idType, newPoints)
     },
-    handleDragstart(e: any) {
+    handleGroupDragstart(e: any) {
       // сохранить идентификатор перетаскиваемого элемента
       this.dragItemId = e.target.id();
       
@@ -351,15 +351,15 @@ export default {
         this.updateTransformer();
       }
     },
-    handleDragend(e: any) {
+    handleGroupDragend(e: any) {
       this.dragItemId = null;
       this.showFloatMenu = true;
       this.updateSelectedNodeAttributs(e);
     },
-    handleTransformStart(e: any) {
+    handleGroupTransformStart(e: any) {
       this.showFloatMenu = false;
     },
-    handleTransformEnd(e: any) {
+    handleGroupTransformEnd(e: any) {
       // обновить свойства элемента после трансформации
       const group = this.groups.find(
         (r) => r.name === this.selectedGroupName
