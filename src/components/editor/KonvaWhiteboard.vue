@@ -264,27 +264,27 @@ export default {
       if(side === 'top'){
         newPoints.push(
           node.x(),
-          node.y() - (group && group.connectionInput? group.connectionInput[0].x : target.x())
+          node.y() - (group && group.connectionInput? group.connectionInput[0].x : target.x()) * node.scaleY()
         )
         return newPoints
       }
       if(side === 'bottom'){
         newPoints.push(
           node.x(),
-          node.y() + (group && group.connectionInput? group.connectionInput[2].y/2 : target.y()/2)
+          node.y() + (group && group.connectionInput? group.connectionInput[2].y/2 : target.y()/2) * node.scaleY()
         )
         return newPoints
       }
       if(side === 'right'){
         newPoints.push(
-          node.x() + (group && group.connectionInput? group.connectionInput[1].x/2 : target.x()/2),
+          node.x() + (group && group.connectionInput? group.connectionInput[1].x/2 : target.x()/2) * node.scaleX(),
           node.y()
         )
         return newPoints
       }
       if(side === 'left'){
         newPoints.push(
-          node.x() - (group && group.connectionInput? group.connectionInput[3].y : target.y()),
+          node.x() - (group && group.connectionInput? group.connectionInput[3].y : target.y()) * node.scaleX(),
           node.y()
         )
         return newPoints
