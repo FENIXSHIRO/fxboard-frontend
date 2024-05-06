@@ -59,17 +59,6 @@
             v-if="group.text"
             :config="group.text"
           />
-          <textarea 
-            v-if="group.text"
-            :value="group.text?.text"
-            style="position: absolute;"
-            :style="{
-              top: group.y + 'px',
-              left: group.x + 'px',
-              height: group.text?.height,
-              width: group.text?.width
-          }"
-          />
           <v-circle
           v-for="connectionInput in group?.connectionInput"
           v-if="drawningLine"
@@ -104,7 +93,7 @@
       :scaleX="selectedNodeAttributs.scaleX"
       :scaleY="selectedNodeAttributs.scaleY"
       :rotation="selectedNodeAttributs.rotation"
-      :stagePos="selectedNodeAttributs.stagePos"
+      :stagePos="selectedNodeAttributs.absolutePos"
       @changeStroke="changeStroke"
       @changeFill="changeFill"
     />
@@ -241,7 +230,7 @@ export default {
       selectedShape: null as Konva.Shape | Object | null,
       showFloatMenu: false,
       selectedNodeAttributs: {
-        stagePos: {x: 0, y: 0},
+        absolutePos: {x: 0, y: 0},
         x: 0,
         y: 0,
         rotation: 0,
@@ -446,7 +435,7 @@ export default {
         (r) => r.name === this.selectedGroupName
       );
       this.selectedNodeAttributs = {
-        stagePos: stage.getAbsolutePosition(),
+        absolutePos: target.getAbsolutePosition(),
         x: target.x(),
         y: target.y(),
         scaleX: target.scaleX(),
@@ -718,6 +707,33 @@ export default {
       }
       this.mouseClickX = e.evt.clientX
       this.mouseClickY = e.evt.clientY
+    },
+    setupTextarea(textarea: HTMLTextAreaElement, node: any, areaPosition: { x: number; y: number }) {
+      textarea.value = node.text();
+      textarea.style.position = 'absolute';
+      textarea.style.top = `${areaPosition.y}px`;
+      textarea.style.left = `${areaPosition.x}px`;
+      textarea.style.width = `${node.width() - node.padding() * 2}px`;
+      textarea.style.height = `${node.height() - node.padding() * 2 + 5}px`;
+      textarea.style.fontSize = `${node.fontSize()}px`;
+      textarea.style.border = 'none';
+      textarea.style.padding = '0px';
+      textarea.style.margin = '0px';
+      textarea.style.overflow = 'hidden';
+      textarea.style.background = 'none';
+      textarea.style.outline = 'none';
+      textarea.style.resize = 'none';
+      textarea.style.lineHeight = `${node.lineHeight()}`;
+      textarea.style.fontFamily = node.fontFamily();
+      textarea.style.textAlign = node.align();
+      textarea.style.color = node.fill();
+      const rotation = node.rotation();
+      let transform = rotation ? `rotateZ(${rotation}deg)` : '';
+      transform += `translateY(-${2 + Math.round(node.fontSize() / 20)}px)`;
+      textarea.style.transform = transform;
+
+      textarea.style.height = 'auto';
+      textarea.style.height = `${textarea.scrollHeight + 3}px`;
     },
     deleteShape() {
       console.log("deleteShape")

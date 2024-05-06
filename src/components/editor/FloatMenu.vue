@@ -93,7 +93,7 @@ export default defineComponent({
       newScaleX: this.scaleX,
       newScaleY: this.scaleY,
       newRotation: this.rotation,
-      newStagePos: this.stagePos,
+      newAbsolutePos: this.stagePos,
       yOffsetByScaleX: false,
       color1: '#409EFF',
       buttonColors: [
@@ -105,8 +105,6 @@ export default defineComponent({
     };
   },
   props: {
-    targetX: {type: Number || String, required: true },
-    targetY: {type: Number || String, required: true },
     scaleX: {type: Number || String, required: true },
     scaleY: {type: Number || String, required: true },
     rotation: {type: Number || String, required: true },
@@ -114,12 +112,6 @@ export default defineComponent({
   },
   emits: ['changeFill', 'changeStroke'],
   watch: {
-    targetX(newValue) {
-      this.newTargetX = newValue
-    },
-    targetY(newValue) {
-      this.newTargetY = newValue
-    },
     scaleX(newValue) {
       this.newScaleX = newValue
     },
@@ -129,22 +121,20 @@ export default defineComponent({
     rotation(newValue) {
       this.newRotation = newValue
     },
-    stagePos(newValue) {
-      this.newStagePos = newValue
+    absolutePos(newValue) {
+      this.newAbsolutePos = newValue
     }
   },
   computed: {
     positionX() {
-      return this.newTargetX + this.newStagePos.x
+      return  this.newAbsolutePos.x
     },
     positionY() {
-      let yPos = 0
       if(Math.abs(this.newRotation) > 50 && Math.abs(this.newRotation) < 135) {
-        yPos = this.newTargetY - 50 * this.newScaleX - 95
+        return this.newAbsolutePos.x - 50 * this.newScaleX - 95
       } else {
-        yPos = this.newTargetY - 50 * this.newScaleY - 95
+        return this.newAbsolutePos.y - 50 * this.newScaleY - 95
       }
-      return yPos + this.newStagePos.y
     }
   },
   methods: {
