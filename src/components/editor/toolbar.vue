@@ -1,5 +1,5 @@
 <template>
-  <div class="shadow-md flex flex-col toolbar absolute left-[10px] bg-[#eee] top-1/4 border-[1px] rounded-lg border-solid border-[#555]">
+  <div class="shadow-md flex flex-col absolute left-[10px] bg-[#eee] top-1/4 border-[1px] rounded-lg border-solid border-[#555]">
     <button class="m-1 p-1 rounded-lg hover:bg-[#ccc]" @click="addSticker">
       <svg
         width="30px" height="30px"
