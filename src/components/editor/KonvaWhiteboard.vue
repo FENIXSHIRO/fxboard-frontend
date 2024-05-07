@@ -43,6 +43,7 @@
           v-for="group in groups"
           :key="group.id"
           :config="group"
+          @dblclick="handleGroupDblClick"
           @dragstart="handleGroupDragstart"
           @dragend="handleGroupDragend"
           @transformstart="handleGroupTransformStart"
@@ -375,6 +376,35 @@ export default {
       this.updateSelectedNodeAttributs(e);
       this.updateTransformer();
     },
+    handleGroupDblClick(e: any) {
+      if(!(e.target instanceof Konva.Text)) {
+        return
+      }
+      const textNode = e.target as Konva.Text
+      const areaPos = textNode.getAbsolutePosition()
+      const textContainer = document.createElement('div')
+      const textCell = document.createElement('div')
+      textContainer.appendChild(textCell)
+
+      document.body.appendChild(textContainer)
+      this.setupTextarea(textCell, textNode, areaPos)
+
+      textNode.hide()
+
+      textCell.focus()
+
+      const handleOutsideClick = (e: any) => {
+        textNode.setText(textCell.innerText);
+        textContainer.parentNode?.removeChild(textContainer);
+        textCell.removeEventListener('blur', handleOutsideClick);
+        textNode.show();
+      };
+
+      setTimeout(() => {
+        textCell.addEventListener('blur', handleOutsideClick);
+      });
+
+    },
     handleStageMouseClick(e: any) {
       this.configKonva.draggable = true;
       
@@ -546,7 +576,7 @@ export default {
                   strokeScaleEnabled: false
                 },
                 text: {
-                  text: 'texttexttexttexttexttexttexttexttexttexttexttexttexttext',
+                  text: '',
                   fontSize: 18,
                   fontFamily: 'Calibri',
                   fill: '#555',
@@ -708,32 +738,31 @@ export default {
       this.mouseClickX = e.evt.clientX
       this.mouseClickY = e.evt.clientY
     },
-    setupTextarea(textarea: HTMLTextAreaElement, node: any, areaPosition: { x: number; y: number }) {
-      textarea.value = node.text();
-      textarea.style.position = 'absolute';
-      textarea.style.top = `${areaPosition.y}px`;
-      textarea.style.left = `${areaPosition.x}px`;
-      textarea.style.width = `${node.width() - node.padding() * 2}px`;
-      textarea.style.height = `${node.height() - node.padding() * 2 + 5}px`;
-      textarea.style.fontSize = `${node.fontSize()}px`;
-      textarea.style.border = 'none';
-      textarea.style.padding = '0px';
-      textarea.style.margin = '0px';
-      textarea.style.overflow = 'hidden';
-      textarea.style.background = 'none';
-      textarea.style.outline = 'none';
-      textarea.style.resize = 'none';
-      textarea.style.lineHeight = `${node.lineHeight()}`;
-      textarea.style.fontFamily = node.fontFamily();
-      textarea.style.textAlign = node.align();
-      textarea.style.color = node.fill();
+    setupTextarea(textCell: HTMLDivElement, node: any, areaPosition: { x: number; y: number }) {
+      textCell.innerHTML = node.text();
+      if(textCell.parentElement) {
+        textCell.parentElement.classList.add('absolute', 'table');
+        textCell.parentElement.style.top = `${areaPosition.y + 3}px`;
+        textCell.parentElement.style.left = `${areaPosition.x}px`;
+        textCell.parentElement.style.width = `${node.width()}px`;
+        textCell.parentElement.style.height = `${node.height()}px`;
+        textCell.parentElement.style.fontSize = `${node.fontSize()}px`;
+      }
+      textCell.contentEditable = 'true';
+      textCell.classList.add(
+        'table-cell',
+        'w-full', 
+        'h-full',
+        'align-middle',
+        'text-center',
+        'truncate'
+      )
+      textCell.style.fontFamily = node.fontFamily();
+
       const rotation = node.rotation();
       let transform = rotation ? `rotateZ(${rotation}deg)` : '';
       transform += `translateY(-${2 + Math.round(node.fontSize() / 20)}px)`;
-      textarea.style.transform = transform;
-
-      textarea.style.height = 'auto';
-      textarea.style.height = `${textarea.scrollHeight + 3}px`;
+      textCell.style.transform = transform;
     },
     deleteShape() {
       console.log("deleteShape")
