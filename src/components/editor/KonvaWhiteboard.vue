@@ -550,6 +550,16 @@ export default {
                   shapeType: 'circle',
                   strokeScaleEnabled: false
                 },
+                text: {
+                  text: 'test',
+                  fontSize: 18,
+                  fontFamily: 'Calibri',
+                  fill: '#555',
+                  width: 100,
+                  height: 100,
+                  padding: 20,
+                  align: 'center',
+                },
                 connectionInput: []
               };
               break;
@@ -576,7 +586,7 @@ export default {
                   strokeScaleEnabled: false
                 },
                 text: {
-                  text: '',
+                  text: 'test',
                   fontSize: 18,
                   fontFamily: 'Calibri',
                   fill: '#555',
@@ -607,6 +617,16 @@ export default {
                   radius: this.defaultParameters.radius,
                   shapeType: 'triangle',
                   strokeScaleEnabled: false
+                },
+                text: {
+                  text: 'test',
+                  fontSize: 18,
+                  fontFamily: 'Calibri',
+                  fill: '#555',
+                  width: 100,
+                  height: 100,
+                  padding: 20,
+                  align: 'center',
                 },
                 connectionInput: []
               };
