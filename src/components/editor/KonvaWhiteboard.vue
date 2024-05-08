@@ -34,10 +34,8 @@
         <v-arrow
           v-for="line in connections"
           :key="line.id"
-          :config="{
-            stroke: 'black',
-            points: line.points
-          }"
+          :config="line"
+          @contextmenu="openContext"
         />
         <v-group 
           v-for="group in groups"
@@ -48,7 +46,7 @@
           @dragend="handleGroupDragend"
           @transformstart="handleGroupTransformStart"
           @transformend="handleGroupTransformEnd"
-          @contextmenu="openContext($event)"
+          @contextmenu="openContext"
           @dragmove="updateSelectedNodeAttributs"
           @transform="updateSelectedNodeAttributs"
         >
@@ -105,7 +103,7 @@
       @update:showMenu="showContextMenu = $event"
      >
      <template #menu>
-      <button @click="deleteShape">Удалить</button>
+      <button @click="deleteFromStage">Удалить</button>
      </template>
     </ContextMenu>
   </div>
@@ -173,8 +171,9 @@ interface ItemGroup {
 }
 
 interface Line {
-  id: number
+  id: string
   points: any[]
+  stroke: string
   fromId?: string
   toId?: string
   fromSide: string
@@ -229,6 +228,7 @@ export default {
       mouseClickX: 0,
       mouseClickY: 0,
       selectedShape: null as Konva.Shape | Object | null,
+      selectedLine: null as Konva.Arrow | Konva.Line | Object | null,
       showFloatMenu: false,
       selectedNodeAttributs: {
         absolutePos: {x: 0, y: 0},
@@ -295,13 +295,15 @@ export default {
     createConnection(e: any, nodeId: any, side: string, offset:{x: number, y: number}) {
       this.drawningLine = true;
       this.configKonva.draggable = false;
-      this.connections.push({
-        id: Date.now(),
+      const newLine = {
+        id: 'line-' + this.connections.length,
+        stroke: 'black',
         points: [e.target.x() - offset.x, e.target.y() - offset.y],
         fromId: nodeId,
         fromSide: side,
         toSide: ""
-      });
+      }
+      this.connections.push(newLine);
     },
     handleMouseMove(e: any) {
       if (!this.drawningLine) {
@@ -333,6 +335,8 @@ export default {
       
       let newPoints = [lastLine.points[0], lastLine.points[1]];
       lastLine.points = this.getConnectionInputPosBySide(e.target, idType, newPoints)
+
+      this.saveStage()
     },
     handleGroupDragstart(e: any) {
       // сохранить идентификатор перетаскиваемого элемента
@@ -355,7 +359,16 @@ export default {
     handleGroupDragend(e: any) {
       this.dragItemId = null;
       this.showFloatMenu = true;
+
+      const group = this.groups.find(
+        (r) => r.name === this.selectedGroupName
+      );
+      if(group === undefined) return;
+      group.x = e.target.x();
+      group.y = e.target.y();
+
       this.updateSelectedNodeAttributs(e);
+      this.saveStage()
     },
     handleGroupTransformStart(e: any) {
       this.showFloatMenu = false;
@@ -375,11 +388,17 @@ export default {
       this.showFloatMenu = true;
       this.updateSelectedNodeAttributs(e);
       this.updateTransformer();
+      this.saveStage();
     },
     handleGroupDblClick(e: any) {
       if(!(e.target instanceof Konva.Text)) {
         return
       }
+
+      const group = this.groups.find(
+        (r) => r.name === this.selectedGroupName
+      );
+
       const textNode = e.target as Konva.Text
       const areaPos = textNode.getAbsolutePosition()
       const textContainer = document.createElement('div')
@@ -394,10 +413,12 @@ export default {
       textCell.focus()
 
       const handleOutsideClick = (e: any) => {
-        textNode.setText(textCell.innerText);
+        if(group?.text)
+          group.text.text = textCell.innerText
         textContainer.parentNode?.removeChild(textContainer);
         textCell.removeEventListener('blur', handleOutsideClick);
         textNode.show();
+        this.saveStage()
       };
 
       setTimeout(() => {
@@ -550,16 +571,6 @@ export default {
                   shapeType: 'circle',
                   strokeScaleEnabled: false
                 },
-                text: {
-                  text: 'test',
-                  fontSize: 18,
-                  fontFamily: 'Calibri',
-                  fill: '#555',
-                  width: 100,
-                  height: 100,
-                  padding: 20,
-                  align: 'center',
-                },
                 connectionInput: []
               };
               break;
@@ -586,7 +597,7 @@ export default {
                   strokeScaleEnabled: false
                 },
                 text: {
-                  text: 'test',
+                  text: '',
                   fontSize: 18,
                   fontFamily: 'Calibri',
                   fill: '#555',
@@ -617,16 +628,6 @@ export default {
                   radius: this.defaultParameters.radius,
                   shapeType: 'triangle',
                   strokeScaleEnabled: false
-                },
-                text: {
-                  text: 'test',
-                  fontSize: 18,
-                  fontFamily: 'Calibri',
-                  fill: '#555',
-                  width: 100,
-                  height: 100,
-                  padding: 20,
-                  align: 'center',
                 },
                 connectionInput: []
               };
@@ -682,6 +683,8 @@ export default {
             stage.off('click');
             stage.on('click', (e) => this.handleStageMouseClick(e));
             this.isCreatingActive = false;
+            console.log(this.groups)
+            this.saveStage()
           }
         }
       };
@@ -737,6 +740,7 @@ export default {
       );
       if(group === undefined) return;
       group.item.fill = color
+      this.saveStage()
     },
     changeStroke(color: string) {
       const group = this.groups.find(
@@ -744,12 +748,20 @@ export default {
       );
       if(group === undefined) return;
       group.item.stroke = color
+      this.saveStage()
     },
     openContext(e: any) {
       if (e.evt instanceof MouseEvent) {
         e.evt.preventDefault();
       }
       this.showContextMenu = true;
+
+      if(e.target instanceof Konva.Arrow || e.target instanceof Konva.Line) {
+        this.selectedLine = e.target
+      } else {
+        this.selectedLine = null;
+      }
+
       if(e.target.getParent()){
         this.selectedShape = e.target.getParent()
       } else {
@@ -784,18 +796,44 @@ export default {
       transform += `translateY(-${2 + Math.round(node.fontSize() / 20)}px)`;
       textCell.style.transform = transform;
     },
-    deleteShape() {
-      console.log("deleteShape")
-      if(this.selectedShape instanceof Konva.Group)
-      this.selectedShape.destroy();
-      this.updateTransformer();
+    deleteFromStage() {
+      console.log("deletedFormStage")
+      if(this.selectedLine) {
+        this.connections = this.connections.filter(
+          (connection) => connection.id !== (this.selectedLine as any).attrs.id
+        );
+        this.saveStage()
+        return;
+      }
+
+      if(this.selectedShape instanceof Konva.Group) {
+        const shapeId = this.selectedShape.attrs.id
+        this.selectedShape.destroy();
+        this.groups = this.groups.filter(
+          (group) => group.id !== shapeId
+        );
+        this.updateTransformer();
+      }
+      this.saveStage()
     },
     dragStageStart() {
       this.showFloatMenu = false
+    },
+    saveStage() {
+      localStorage.setItem('groups', JSON.stringify(this.groups))
+      localStorage.setItem('connections', JSON.stringify(this.connections))
+    },
+    loadStage() {
+      const groupsData = localStorage.getItem('groups')
+      if (groupsData) this.groups = JSON.parse(groupsData);
+
+      const connectionsData = localStorage.getItem('connections')
+      if (connectionsData) this.connections = JSON.parse(connectionsData);
     }
   },
   mounted() {
-    this.groups = []; // Изменить начальные значения или оставить пустым
+    //this.groups = []; // Изменить начальные значения или оставить пустым
+    this.loadStage()
   },
 };
 
