@@ -6,6 +6,7 @@
     "build": "vite build"
   },
   "dependencies": {
+    "axios": "^1.6.8",
     "element-plus": "^2.7.2",
     "konva": "^9.3.6",
     "vue": "^3.0.4",

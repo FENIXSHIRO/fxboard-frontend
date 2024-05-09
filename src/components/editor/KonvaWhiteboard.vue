@@ -116,6 +116,7 @@ import ContextMenu from "@/components/common/ContextMenu.vue";
 import ConnectionAnchor from "@/components/editor/ConnectionAnchor.vue"
 import FloatMenu from "@/components/editor/FloatMenu.vue";
 import { KonvaEventObject } from "konva/lib/Node";
+import { getBoardItems, postNewBoardElement } from "../../js/ApiRequests";
 
 const width = window.innerWidth;
 const height = window.innerHeight;
@@ -683,8 +684,8 @@ export default {
             stage.off('click');
             stage.on('click', (e) => this.handleStageMouseClick(e));
             this.isCreatingActive = false;
-            console.log(this.groups)
-            this.saveStage()
+            console.log(JSON.stringify(newGroup))
+            this.saveStage(newGroup)
           }
         }
       };
@@ -819,16 +820,18 @@ export default {
     dragStageStart() {
       this.showFloatMenu = false
     },
-    saveStage() {
-      localStorage.setItem('groups', JSON.stringify(this.groups))
-      localStorage.setItem('connections', JSON.stringify(this.connections))
-    },
-    loadStage() {
-      const groupsData = localStorage.getItem('groups')
-      if (groupsData) this.groups = JSON.parse(groupsData);
+    async saveStage(newGroup?: any) {
+      if(newGroup) postNewBoardElement(JSON.stringify(newGroup))
 
-      const connectionsData = localStorage.getItem('connections')
-      if (connectionsData) this.connections = JSON.parse(connectionsData);
+      //localStorage.setItem('groups', JSON.stringify(this.groups))
+      //localStorage.setItem('connections', JSON.stringify(this.connections))
+      //console.log(JSON.stringify(this.groups))
+    },
+    async loadStage() {
+      const dataFromDB = await getBoardItems()
+      this.groups = dataFromDB
+      //const groupsData = localStorage.getItem('groups')
+      //if (groupsData && dataFromDB) this.groups = JSON.parse(dataFromDB);
     }
   },
   mounted() {
