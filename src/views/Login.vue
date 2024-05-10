@@ -31,6 +31,7 @@ import { defineComponent } from 'vue'
 import { mapStores } from 'pinia'
 import { ElMessage } from 'element-plus'
 import { useAuthStore } from '@/stores/auth'
+import { AxiosError } from 'axios';
 
 export default defineComponent({
   components: {},
@@ -53,11 +54,19 @@ export default defineComponent({
         })
         return
       }
-      console.log(this.username + '|' + this.password)
       const authStore = useAuthStore()
-      
-      // Вызов метода login из экземпляра стора
-      await authStore.login(this.username, this.password)
+      try {
+        // Вызов метода login из экземпляра стора
+        await authStore.login(this.username, this.password)
+      } catch(e: any) {
+        if(e.message === 'Request failed with status code 401') {
+          ElMessage({
+          message: 'Введен неверный логин или пароль',
+          type: 'error',
+          grouping: true
+        })
+        }
+      }
     }
   }
 })
