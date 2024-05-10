@@ -87,12 +87,10 @@
     />
     <FloatMenu 
       v-if="isNodeEditing && showFloatMenu"
-      :targetX="selectedNodeAttributs.x"
-      :targetY="selectedNodeAttributs.y"
       :scaleX="selectedNodeAttributs.scaleX"
       :scaleY="selectedNodeAttributs.scaleY"
       :rotation="selectedNodeAttributs.rotation"
-      :stagePos="selectedNodeAttributs.absolutePos"
+      :absolutePos="selectedNodeAttributs.absolutePos"
       @changeStroke="changeStroke"
       @changeFill="changeFill"
     />

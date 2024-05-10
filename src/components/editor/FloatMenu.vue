@@ -88,12 +88,10 @@ export default defineComponent({
   },
   data() {
     return {
-      newTargetX: this.targetX,
-      newTargetY: this.targetY,
       newScaleX: this.scaleX,
       newScaleY: this.scaleY,
       newRotation: this.rotation,
-      newAbsolutePos: this.stagePos,
+      newAbsolutePos: this.absolutePos,
       yOffsetByScaleX: false,
       color1: '#409EFF',
       buttonColors: [
@@ -108,7 +106,7 @@ export default defineComponent({
     scaleX: {type: Number || String, required: true },
     scaleY: {type: Number || String, required: true },
     rotation: {type: Number || String, required: true },
-    stagePos: {type: Object as () => { x: number, y: number }, required: true },
+    absolutePos: {type: Object as () => { x: number, y: number }, required: true },
   },
   emits: ['changeFill', 'changeStroke'],
   watch: {
