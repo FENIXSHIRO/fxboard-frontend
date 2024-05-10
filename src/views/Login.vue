@@ -31,7 +31,6 @@ import { defineComponent } from 'vue'
 import { mapStores } from 'pinia'
 import { ElMessage } from 'element-plus'
 import { useAuthStore } from '@/stores/auth'
-import { AxiosError } from 'axios';
 
 export default defineComponent({
   components: {},

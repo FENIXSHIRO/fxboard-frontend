@@ -23,3 +23,31 @@
     </div>
   </div>
 </template>
+
+<script lang="ts">
+import { defineComponent } from 'vue'
+import { useAuthStore } from '@/stores/auth'
+
+export default defineComponent({
+  components: {},
+  setup() {
+    return {
+      authStore: useAuthStore()
+    }
+  },
+  data: () => ({
+  }),
+  props: {},
+  emits: [],
+  computed: {
+    user() {
+      return this.authStore.user
+    }
+  },
+  methods: {
+  }
+})
+</script>
+
+<style scoped>
+</style>
