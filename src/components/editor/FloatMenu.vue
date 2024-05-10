@@ -1,7 +1,7 @@
 <template>
   <div 
   :style="{ top: positionY + 'px', left: positionX + 'px' }"
-  class="absolute translate-x-[-50%] bg-[#eee] rounded-md shadow-md *:min-h-[30px] *:min-w-[30px] *:rounded-md *:m-[5px]"
+  class="absolute translate-x-[-50%] bg-white border rounded-md shadow-md *:min-h-[30px] *:min-w-[30px] *:rounded-md *:m-[5px]"
   >
     <PopoverMenu>
       <button class="floatMenuButton">
@@ -150,6 +150,6 @@ export default defineComponent({
 
 <style scoped>
 .floatMenuButton {
- @apply hover:bg-[#ccc] p-[5px];
+ @apply hover:bg-[#eee] p-[5px];
 }
 </style>
