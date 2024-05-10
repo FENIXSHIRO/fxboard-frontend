@@ -1,6 +1,6 @@
 <template>
-  <div class="shadow-md flex flex-col absolute left-[10px] bg-[#eee] top-1/4 border-[1px] rounded-lg border-solid border-[#555]">
-    <button class="m-1 p-1 rounded-lg hover:bg-[#ccc]" @click="addSticker">
+  <div class="shadow-md flex flex-col absolute left-[10px] bg-white top-1/4 border rounded-lg">
+    <button class="m-1 p-1 rounded-lg hover:bg-[#eee]" @click="addSticker">
       <svg
         width="30px" height="30px"
         viewBox="0 0 30 30"
@@ -13,7 +13,7 @@
         </g>
       </svg>
     </button>
-    <button class="m-1 p-1 rounded-lg hover:bg-[#ccc]" @click="addText">
+    <button class="m-1 p-1 rounded-lg hover:bg-[#eee]" @click="addText">
       <svg 
         width="30px" height="30px"
         viewBox="0 0 30 30"
@@ -26,7 +26,7 @@
         </g>
       </svg>
     </button>
-    <button class="m-1 p-1 rounded-lg hover:bg-[#ccc]" @click="addSquare">
+    <button class="m-1 p-1 rounded-lg hover:bg-[#eee]" @click="addSquare">
       <svg
         width="30px" height="30px"
         viewBox="0 0 30 30"
@@ -39,7 +39,7 @@
         </g>
       </svg>
     </button>
-    <button class="m-1 p-1 rounded-lg hover:bg-[#ccc]" @click="addCircle">
+    <button class="m-1 p-1 rounded-lg hover:bg-[#eee]" @click="addCircle">
       <svg 
         width="30px" height="30px"
         viewBox="0 0 30 30"
@@ -52,7 +52,7 @@
         </g>
       </svg>
     </button>
-    <button class="m-1 p-1 rounded-lg hover:bg-[#ccc]" @click="addTriangle">
+    <button class="m-1 p-1 rounded-lg hover:bg-[#eee]" @click="addTriangle">
       <svg 
         width="30px" height="30px"
         viewBox="0 0 30 30"
@@ -66,7 +66,7 @@
       </svg>
     </button>
     <hr class="my-1 h-px border-t-0 bg-transparent bg-gradient-to-r from-transparent via-neutral-500 to-transparent opacity-50 dark:via-neutral-400" />
-    <button class="m-1 p-1 rounded-lg hover:bg-[#ccc]" @click="addCard">
+    <button class="m-1 p-1 rounded-lg hover:bg-[#eee]" @click="addCard">
       <svg 
         width="30px" height="30px"
         viewBox="0 0 30 30"
@@ -79,7 +79,7 @@
         </g>
       </svg>
     </button>
-    <button class="m-1 p-1 rounded-lg hover:bg-[#ccc]" @click="addFrame">
+    <button class="m-1 p-1 rounded-lg hover:bg-[#eee]" @click="addFrame">
       <svg 
         width="30px" height="30px"
         viewBox="0 0 30 30"
