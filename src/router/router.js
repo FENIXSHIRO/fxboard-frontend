@@ -1,8 +1,6 @@
-import { useAuthStore } from '@/stores';
 import Home from '@/views/Home.vue';
 import { createRouter, createWebHistory } from 'vue-router';
-
-const isAuthenticated = false
+import { useAuthStore } from '../stores/auth';
 
 const router = createRouter({
   history: createWebHistory(),

@@ -30,6 +30,7 @@
 import { defineComponent } from 'vue'
 import { mapStores } from 'pinia'
 import { ElMessage } from 'element-plus'
+import { useAuthStore } from '@/stores/auth'
 
 export default defineComponent({
   components: {},
@@ -43,7 +44,7 @@ export default defineComponent({
     ...mapStores([])
   },
   methods: {
-    login() {
+    async login() {
       if(this.username == null || this.password == null) {
         ElMessage({
           message: 'Данные для входа не введены',
@@ -53,6 +54,10 @@ export default defineComponent({
         return
       }
       console.log(this.username + '|' + this.password)
+      const authStore = useAuthStore()
+      
+      // Вызов метода login из экземпляра стора
+      await authStore.login(this.username, this.password)
     }
   }
 })
