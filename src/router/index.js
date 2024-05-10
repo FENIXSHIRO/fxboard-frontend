@@ -1,5 +1,6 @@
-import Home from '@/views/Home.vue'
-import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '@/stores';
+import Home from '@/views/Home.vue';
+import { createRouter, createWebHistory } from 'vue-router';
 
 const isAuthenticated = false
 
@@ -30,3 +31,15 @@ const router = createRouter({
 })
 
 export default router
+
+router.beforeEach(async (to) => {
+  // redirect to login page if not logged in and trying to access a restricted page
+  const publicPages = ['/auth/login', '/auth/signup'];
+  const authRequired = !publicPages.includes(to.path);
+  const auth = useAuthStore();
+
+  if (authRequired && !auth.user) {
+      auth.returnUrl = to.fullPath;
+      return '/auth/login';
+  }
+});

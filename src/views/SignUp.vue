@@ -1,5 +1,5 @@
 <template>
-  <div class="m-auto mt-20 w-full max-w-xs">
+  <div class="m-auto mt-20 w-full max-w-sm">
     <form class="bg-white border shadow-md rounded-md px-8 pt-6 pb-8 mb-4">
       <h1 class="font-bold">Регистрация</h1>
       <div class="mb-4 mt-3">
@@ -24,6 +24,9 @@
         <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="button">
           Зарегистрироваться
         </button>
+        <RouterLink to="/auth/login" class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
+          Войти
+        </RouterLink>
       </div>
     </form>
   </div>

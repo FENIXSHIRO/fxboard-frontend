@@ -9,6 +9,7 @@
     "axios": "^1.6.8",
     "element-plus": "^2.7.2",
     "konva": "^9.3.6",
+    "pinia": "^2.1.7",
     "vue": "^3.0.4",
     "vue-konva": "^3.0.2",
     "vue-router": "^4.3.0"
