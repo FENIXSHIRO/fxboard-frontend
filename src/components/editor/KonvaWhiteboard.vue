@@ -980,12 +980,12 @@ export default {
       textCell.style.transform = transform;
     },
     generateCircles() {
-      const WIDTH = 25 * this.stageScale;
-      const HEIGHT = 25 * this.stageScale;
-      const startX = Math.floor((-this.configKonva.x - (window.innerWidth * this.stageScale)) / WIDTH) * WIDTH;
-      const endX = Math.floor((-this.configKonva.x + (window.innerWidth * this.stageScale) * 2) / WIDTH) * WIDTH;
-      const startY = Math.floor((-this.configKonva.y - (window.innerHeight * this.stageScale)) / HEIGHT) * HEIGHT;
-      const endY = Math.floor((-this.configKonva.y + (window.innerHeight * this.stageScale) * 2) / HEIGHT) * HEIGHT;
+      const WIDTH = 25;
+      const HEIGHT = 25;
+      const startX = Math.floor((-this.configKonva.x - window.innerWidth) / WIDTH) * WIDTH;
+      const endX = Math.floor((-this.configKonva.x + window.innerWidth * 2) / WIDTH) * WIDTH;
+      const startY = Math.floor((-this.configKonva.y - window.innerHeight) / HEIGHT) * HEIGHT;
+      const endY = Math.floor((-this.configKonva.y + window.innerHeight * 2) / HEIGHT) * HEIGHT;
 
       const newCircles = [];
       for (let x = startX; x < endX; x += WIDTH) {
