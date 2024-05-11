@@ -190,6 +190,7 @@ import { useBoardsStore } from "@/stores/boards"
 import { ElDrawer, ElButton, ElDivider, ElDatePicker } from 'element-plus'
 import { QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css';
+import { makeid } from "@/js/helpers/randomGenerator"
 
 const width = window.innerWidth;
 const height = window.innerHeight;
@@ -675,6 +676,7 @@ export default {
       let newGroup: ItemGroup; // Определяем переменную здесь
 
       const clickHandler = (e: KonvaEventObject<MouseEvent>) => {
+        const localId = `node-${this.groups.length}-${makeid(3)}`
         const pos = stage.getRelativePointerPosition();
         if (pos) {
           switch (shapeType) {
@@ -687,9 +689,9 @@ export default {
                 rotation: 0,
                 scaleX: 1,
                 scaleY: 1,
-                id: `node-${this.groups.length}`,
+                id: localId,
                 draggable: true,
-                name: `node-${this.groups.length}`,
+                name: localId,
                 item:{
                   stroke: '#212121',
                   strokeWidth: 4,
@@ -711,9 +713,9 @@ export default {
                 rotation: 0,
                 scaleX: 1,
                 scaleY: 1,
-                id: `node-${this.groups.length}`,
+                id: localId,
                 draggable: true,
-                name: `node-${this.groups.length}`,
+                name: localId,
                 item:{
                   width: this.defaultParameters.width,
                   height: this.defaultParameters.height,
@@ -744,9 +746,9 @@ export default {
                 rotation: 0,
                 scaleX: 1,
                 scaleY: 1,
-                id: `node-${this.groups.length}`,
+                id: localId,
                 draggable: true,
-                name: `node-${this.groups.length}`,
+                name: localId,
                 item:{
                   stroke: '#212121',
                   strokeWidth: 4,
@@ -769,9 +771,9 @@ export default {
                 rotation: 0,
                 scaleX: 1,
                 scaleY: 1,
-                id: `node-${this.groups.length}`,
+                id: localId,
                 draggable: true,
-                name: `node-${this.groups.length}`,
+                name: localId,
                 item:{
                   width: 200,
                   height: 100,
