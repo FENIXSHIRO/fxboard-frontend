@@ -135,21 +135,23 @@
     </template>
     <h4 class="text-left">Статус</h4>
     <ElDivider class="my-2" />
-    <p class="text-left">Исполнитель:</p>
-    <div class="my-1 flex content-start">
-      C:
+    <div class="flex">
+      <p class="text-left">Исполнитель:</p>
+    </div>
+    <div class="my-2 flex content-start">
+      <div class="align-middle p-1">C: </div>
       <ElDatePicker
         type="datetime"
-        placeholder="Select date and time"
+        placeholder="Начало"
       />
-      До:
+      <div class="align-middle p-1">До: </div>
       <ElDatePicker
         type="datetime"
-        placeholder="Select date and time"
+        placeholder="Конец"
       />
     </div>
     <h4 class="text-left">Описание</h4>
-    <ElDivider class="mt-2 mb-5" />
+    <ElDivider class="mt-2 mb-3" />
     <div class="h-1/4">
       <QuillEditor
         v-if="!showDescriptionEditor"
@@ -166,7 +168,8 @@
       <h4 class="text-left pt-3">Сообщения</h4>
       <ElDivider class="mt-2 mb-5" />
       <textarea
-        class="w-full p-3 outline-none border rounded-md"
+        placeholder="Ваше сообщение"
+        class="w-full p-3 outline-none border-2 rounded-md"
        />
       <ElButton class="my-3 ms-0" color="#3b82f6">Отправить</ElButton>
       <div class="w-full">
@@ -341,7 +344,7 @@ export default {
         modules: {
           toolbar: false
         },
-        placeholder: 'Compose an epic...',
+        placeholder: 'Описание задачи...',
         readOnly: true,
         theme: 'snow'
       }
