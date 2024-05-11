@@ -984,6 +984,7 @@ export default {
     },
     deleteFromStage() {
       console.log("deletedFormStage")
+      this.isNodeEditing = false;
       if(this.selectedLine) {
         this.connections = this.connections.filter(
           (connection) => connection.id !== (this.selectedLine as any).attrs.id
