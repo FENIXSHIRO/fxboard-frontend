@@ -35,8 +35,8 @@ import { useAuthStore } from '@/stores/auth'
 export default defineComponent({
   components: {},
   data: () => ({
-    username: null as string | null,
-    password: null as string | null
+    username: '',
+    password: ''
   }),
   props: {},
   emits: [],
@@ -45,7 +45,7 @@ export default defineComponent({
   },
   methods: {
     async login() {
-      if(this.username == null || this.password == null) {
+      if(this.username == '' || this.password == '') {
         ElMessage({
           message: 'Данные для входа не введены',
           type: 'warning',

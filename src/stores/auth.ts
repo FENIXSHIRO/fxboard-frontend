@@ -22,7 +22,23 @@ export const useAuthStore = defineStore({
             // update pinia state
             this.user = user.data._doc;
             // store user details and jwt in local storage to keep user logged in between page refreshes
-            localStorage.setItem('user', JSON.stringify(user));
+            localStorage.setItem('user', JSON.stringify(user.data._doc));
+
+            // redirect to previous url or default to home page
+            router.push(this.returnUrl || '/');
+        },
+        async signUp(username: any, email: any, password: any) {
+            const data = {
+                username: username,
+                email: email,
+                password: password
+            }
+
+            const user = await axios.post(`http://localhost:3000/users/signup`, data as any);
+            // update pinia state
+            this.user = user.data;
+            // store user details and jwt in local storage to keep user logged in between page refreshes
+            localStorage.setItem('user', JSON.stringify(user.data));
 
             // redirect to previous url or default to home page
             router.push(this.returnUrl || '/');

@@ -3,21 +3,34 @@
     <router-view />
   </main>
   <RouterLinks />
+  <UserPanel v-if="user" />
+
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
 
 import RouterLinks from "@/components/RouterLinks.vue";
+import UserPanel from "@/components/UserPanel.vue";
+import { useAuthStore } from './stores/auth';
 
 export default defineComponent({
   components: {
-    RouterLinks
+    RouterLinks,
+    UserPanel
+  },
+  setup() {
+    return {
+      authStore: useAuthStore()
+    }
   },
   data: () => ({}),
   props: {},
   emits: [],
   computed: {
+    user() {
+      return this.authStore.user
+    }
   },
   methods: {}
 })
