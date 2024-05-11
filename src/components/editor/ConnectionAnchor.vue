@@ -68,8 +68,8 @@ export default defineComponent({
       newScaleX: this.scaleX,
       newScaleY: this.scaleY,
       verticalHalf: 50,
-      horizontalHalf: 50,
-      anchorOffset: 20
+      anchorOffset: 20,
+      newNodeType: this.nodeType
     };
   },
   props: {
@@ -80,6 +80,7 @@ export default defineComponent({
     rotation: { type: Number, default: 0 },
     stageScale: { type: Number, default: 1 },
     nodeId: { type: String, required: true },
+    nodeType: { type: String }
   },
   watch: {
     x(newValue) {
@@ -99,10 +100,20 @@ export default defineComponent({
     },
     stageScale(newValue) {
       this.newStageScale = newValue
+    },
+    nodeType(newValue) {
+      this.newNodeType = newValue
     }
   },
   emits: ['connectNodes'],
   computed: {
+    horizontalHalf() {
+      if (this.newNodeType === 'card') {
+        return 100
+      } else {
+        return 50
+      }
+    }
   },
   methods: {
     createConnection(e: any, side: string, offset:{x: number, y:number}) {
@@ -118,7 +129,8 @@ export default defineComponent({
       e.target.stroke(null);
     }
   },
-
+  mounted() {
+  },
 })
 </script>
 

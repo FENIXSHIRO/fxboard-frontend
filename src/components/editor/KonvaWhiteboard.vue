@@ -51,17 +51,36 @@
           @transform="updateSelectedNodeAttributs"
         >
           <component
-          :is="getShapeComponent(group.item.shapeType)"
-          :config="group.item"
+            v-if="group.item.shapeType !== 'card'"
+            :is="getShapeComponent(group.item.shapeType)"
+            :config="group.item"
+          />
+          <v-rect
+            v-if="group.item.shapeType == 'card'"
+            :cornerRadius="10"
+            :config="group.item"
+          />
+          <v-rect
+            v-if="group.item.shapeType == 'card'"
+            :config="{
+              x: 0,
+              y: 50,
+              height: 50,
+              width: 200,
+              fill: 'white',
+              stroke: '#ddd',
+              strokeWidth: 1,
+              cornerRadius: [0, 0, 10, 10]
+            }"
           />
           <v-text
             v-if="group.text"
             :config="group.text"
           />
           <v-circle
-          v-for="connectionInput in group?.connectionInput"
-          v-if="drawningLine"
-          :config="connectionInput"
+            v-for="connectionInput in group?.connectionInput"
+            v-if="drawningLine"
+            :config="connectionInput"
            />
         </v-group>
         <v-transformer
@@ -76,6 +95,7 @@
           :scaleY="selectedNodeAttributs.scaleY"
           :rotation="selectedNodeAttributs.rotation"
           :nodeId="selectedNodeAttributs.nodeId"
+          :nodeType="selectedNodeAttributs.nodeType"
           @connectNodes="createConnection"
         />
       </v-layer>
@@ -84,6 +104,7 @@
       @add-circle="addCircle"
       @add-square="addSquare"
       @add-triangle="addTriangle"
+      @add-card="addCard"
     />
     <FloatMenu 
       v-if="isNodeEditing && showFloatMenu"
@@ -108,14 +129,13 @@
 </template>
 
 <script lang="ts">
-import Konva from "konva";
-import Toolbar from "@/components/editor/Toolbar.vue";
-import ContextMenu from "@/components/common/ContextMenu.vue";
+import Konva from "konva"
+import Toolbar from "@/components/editor/Toolbar.vue"
+import ContextMenu from "@/components/common/ContextMenu.vue"
 import ConnectionAnchor from "@/components/editor/ConnectionAnchor.vue"
-import FloatMenu from "@/components/editor/FloatMenu.vue";
-import { KonvaEventObject } from "konva/lib/Node";
-import { useBoardsStore } from "@/stores/boards";
-import { getBoardItems } from "@/js/ApiRequests";
+import FloatMenu from "@/components/editor/FloatMenu.vue"
+import { KonvaEventObject } from "konva/lib/Node"
+import { useBoardsStore } from "@/stores/boards"
 
 const width = window.innerWidth;
 const height = window.innerHeight;
@@ -146,6 +166,8 @@ interface ItemGroup {
     sides?: number, // для треугольников
   }
   text?:{
+    x?: number
+    y?: number
     text: string,
     fontSize: number,
     fontFamily?: string,
@@ -242,7 +264,8 @@ export default {
         rotation: 0,
         scaleX: 1,
         scaleY: 1,
-        nodeId: ''
+        nodeId: '',
+        nodeType: ''
       }
     };
   },
@@ -436,6 +459,7 @@ export default {
     },
     handleStageMouseClick(e: any) {
       this.configKonva.draggable = true;
+      this.isNodeEditing = false;
       
       // если кликнули по сцене, очистить выбор
       if (e.target === e.target.getStage()) {
@@ -488,8 +512,6 @@ export default {
         target = e.target.getParent()
       }
 
-      const stage = (this.$refs.stage as Konva.Stage).getStage();
-
       const group = this.groups.find(
         (r) => r.name === this.selectedGroupName
       );
@@ -500,7 +522,8 @@ export default {
         scaleX: target.scaleX(),
         scaleY: target.scaleY(),
         rotation: target.rotation(),
-        nodeId: target.id()
+        nodeId: target.id(),
+        nodeType: group?.item.shapeType as string
       }
 
       this.updateConnections(target);
@@ -509,8 +532,10 @@ export default {
       if(!group.text) return
       group.text.scaleX = 1/Math.abs(target.scaleX())
       group.text.scaleY = 1/Math.abs(target.scaleY())
-      group.text.width = this.defaultParameters.width * Math.abs(target.scaleX())
-      group.text.height = this.defaultParameters.height * Math.abs(target.scaleY())
+      if(group.item.shapeType !== 'card') {
+        group.text.width = this.defaultParameters.width * Math.abs(target.scaleX())
+        group.text.height = this.defaultParameters.height * Math.abs(target.scaleY())
+      }
       if(!group.connectionInput) return
       for (let index = 0; index < 4; index++) {
         group.connectionInput[index].scaleX = 1/Math.abs(target.scaleX())
@@ -523,10 +548,14 @@ export default {
       const stage = transformerNode.getStage();
       const { selectedGroupName } = this;
       const selectedGroup = stage.findOne('.' + selectedGroupName);
+      const group = this.groups.find(
+        (r) => r.name === selectedGroupName
+      );
 
       if (selectedGroup === transformerNode.node()) {
         return;
       }
+
       transformerNode.anchorStyleFunc(function(anchor: any) {
       if (anchor.hasName('rotater')) {
         anchor.fill('black');
@@ -544,6 +573,9 @@ export default {
       if (selectedGroup) {
         transformerNode.nodes([selectedGroup]);
         this.isNodeEditing = true;
+        if (group?.item.shapeType === 'card') {
+          transformerNode.nodes([]);
+        }
       } else {
         transformerNode.nodes([]);
         this.isNodeEditing = false;
@@ -640,6 +672,43 @@ export default {
                 connectionInput: []
               };
               break;
+            case 'card':
+            newGroup = {
+                x: pos.x,
+                y: pos.y,
+                width: 200,
+                height: 100,
+                offsetX: 100,
+                offsetY: 50,
+                rotation: 0,
+                scaleX: 1,
+                scaleY: 1,
+                id: `node-${this.groups.length}`,
+                draggable: true,
+                name: `node-${this.groups.length}`,
+                item:{
+                  width: 200,
+                  height: 100,
+                  stroke: '#aaa',
+                  fill: '#005ef5',
+                  strokeWidth: 1,
+                  shapeType: 'card',
+                  strokeScaleEnabled: false
+                },
+                text: {
+                  y: 50,
+                  text: 'test',
+                  fontSize: 18,
+                  fontFamily: 'Calibri',
+                  fill: '#555',
+                  width: 200,
+                  height: 50,
+                  padding: 20,
+                  align: 'center',
+                },
+                connectionInput: []
+              };
+              break;
             default:
               break;
           }
@@ -653,6 +722,12 @@ export default {
               connectionInputX = newGroup.width/2
               connectionInputY = newGroup.width/2
             }
+
+            if(shapeType === 'card') {
+              connectionInputX = newGroup.width/2
+              connectionInputY = newGroup.width/4
+            }
+
             switch(index) {
               case 0: // top
               connectionInputId = `connectionInput-top-${this.groups.length}`
@@ -687,12 +762,13 @@ export default {
           }
 
           if (newGroup) { // Проверяем, определена ли newItem
+            console.log(newGroup)
             this.groups.push(newGroup);
             stage.off('click');
             stage.on('click', (e) => this.handleStageMouseClick(e));
             this.isCreatingActive = false;
-            console.log(JSON.stringify(newGroup))
-            this.saveStage(newGroup)
+            //console.log(JSON.stringify(newGroup))
+            //this.saveStage(newGroup)
           }
         }
       };
@@ -706,6 +782,9 @@ export default {
     },
     addTriangle() {
       this.addShape('triangle');
+    },
+    addCard() {
+      this.addShape('card');
     },
     handleStageWheel(e: { evt: { deltaY: number; }; }) {
       // определить направление прокрутки

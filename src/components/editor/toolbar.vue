@@ -114,7 +114,7 @@ export default {
       this.$emit('add-triangle');
     },
     addCard() {
-      this.$emit('add-triangle');
+      this.$emit('add-card');
     },
     addFrame() {
       this.$emit('add-triangle');
