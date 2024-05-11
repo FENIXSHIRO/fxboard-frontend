@@ -1,5 +1,5 @@
 <template>
-  <KonvaWhiteboard />
+  <KonvaWhiteboard :board-id="$route.params.id.toString()" />
 </template>
 
 <script lang="ts">

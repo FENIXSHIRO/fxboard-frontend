@@ -114,7 +114,8 @@ import ContextMenu from "@/components/common/ContextMenu.vue";
 import ConnectionAnchor from "@/components/editor/ConnectionAnchor.vue"
 import FloatMenu from "@/components/editor/FloatMenu.vue";
 import { KonvaEventObject } from "konva/lib/Node";
-import { getBoardItems, postNewBoardElement } from "../../js/ApiRequests";
+import { useBoardsStore } from "@/stores/boards";
+import { getBoardItems } from "@/js/ApiRequests";
 
 const width = window.innerWidth;
 const height = window.innerHeight;
@@ -186,6 +187,11 @@ export default {
     ConnectionAnchor,
     FloatMenu
   },
+  setup() {
+    return {
+      boardsStore: useBoardsStore()
+    }
+  },
   data() {
     return {
       groups: [] as ItemGroup[],
@@ -239,6 +245,9 @@ export default {
         nodeId: ''
       }
     };
+  },
+  props: {
+    boardId: {type: String, required: true }
   },
   computed: {
   },
@@ -819,21 +828,20 @@ export default {
       this.showFloatMenu = false
     },
     async saveStage(newGroup?: any) {
-      if(newGroup) postNewBoardElement(JSON.stringify(newGroup))
+      if(newGroup) this.boardsStore.addItemsToBoarrd(this.boardId, JSON.stringify(newGroup))
 
       //localStorage.setItem('groups', JSON.stringify(this.groups))
       //localStorage.setItem('connections', JSON.stringify(this.connections))
       //console.log(JSON.stringify(this.groups))
     },
     async loadStage() {
-      const dataFromDB = await getBoardItems()
+      const dataFromDB = await this.boardsStore.getBoardItems(this.boardId)
       this.groups = dataFromDB
-      //const groupsData = localStorage.getItem('groups')
-      //if (groupsData && dataFromDB) this.groups = JSON.parse(dataFromDB);
     }
   },
   mounted() {
     //this.groups = []; // Изменить начальные значения или оставить пустым
+    console.log(`Open board: ${this.boardId}`)
     this.loadStage()
   },
 };
