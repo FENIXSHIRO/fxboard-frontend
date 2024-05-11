@@ -126,6 +126,54 @@
      </template>
     </ContextMenu>
   </div>
+  <ElDrawer
+    v-model="showTaskMenu"
+    :modal="false"
+  >
+    <template #header="{ titleId }">
+      <h1 :id="titleId" class="font-bold text-xl">{{taskTitle}}</h1>
+    </template>
+    <h4 class="text-left">Статус</h4>
+    <ElDivider class="my-2" />
+    <p class="text-left">Исполнитель:</p>
+    <div class="my-1 flex content-start">
+      C:
+      <ElDatePicker
+        type="datetime"
+        placeholder="Select date and time"
+      />
+      До:
+      <ElDatePicker
+        type="datetime"
+        placeholder="Select date and time"
+      />
+    </div>
+    <h4 class="text-left">Описание</h4>
+    <ElDivider class="mt-2 mb-5" />
+    <div class="h-1/4">
+      <QuillEditor
+        v-if="!showDescriptionEditor"
+        v-model="taskDescription"
+        @dblclick="editTaskDescription"
+        :options="quillReaderOptions"
+      />
+      <QuillEditor
+      v-if="showDescriptionEditor"
+      v-model="taskDescription"
+      toolbar="minimal"
+    />
+      <ElButton v-if="showDescriptionEditor" @click="saveTaskDescription" class="my-3 ms-0" color="#3b82f6">Сохранить</ElButton>
+      <h4 class="text-left pt-3">Сообщения</h4>
+      <ElDivider class="mt-2 mb-5" />
+      <textarea
+        class="w-full p-3 outline-none border rounded-md"
+       />
+      <ElButton class="my-3 ms-0" color="#3b82f6">Отправить</ElButton>
+      <div class="w-full">
+
+      </div>
+    </div>
+  </ElDrawer>
 </template>
 
 <script lang="ts">
@@ -136,6 +184,9 @@ import ConnectionAnchor from "@/components/editor/ConnectionAnchor.vue"
 import FloatMenu from "@/components/editor/FloatMenu.vue"
 import { KonvaEventObject } from "konva/lib/Node"
 import { useBoardsStore } from "@/stores/boards"
+import { ElDrawer, ElButton, ElDivider, ElDatePicker } from 'element-plus'
+import { QuillEditor } from '@vueup/vue-quill'
+import '@vueup/vue-quill/dist/vue-quill.snow.css';
 
 const width = window.innerWidth;
 const height = window.innerHeight;
@@ -207,7 +258,12 @@ export default {
     Toolbar,
     ContextMenu,
     ConnectionAnchor,
-    FloatMenu
+    FloatMenu,
+    ElDrawer,
+    QuillEditor,
+    ElButton,
+    ElDivider,
+    ElDatePicker
   },
   setup() {
     return {
@@ -216,18 +272,22 @@ export default {
   },
   data() {
     return {
-      groups: [] as ItemGroup[],
-      dragItemId: null as string | null,
       configKonva: {
         width: width,
         height: height,
         draggable: true
       },
+      stageScale: 1, // Добавляем переменную для отслеживания масштаба
+
       bgGridConfig: {
         radius: 1,
         fill: '#333',
         listening: false
       },
+      gridSize: 20,
+      gridColumns: Math.ceil(window.innerWidth / 20),
+      gridRows: Math.ceil(window.innerHeight / 20),
+
       transformerConfig: {
         keepRatio: false,
         ignoreStroke: true,
@@ -241,22 +301,6 @@ export default {
         height: 100,
         radius: 50
       },
-      connections: [] as Line[],
-      drawningLine: false,
-      selectedGroupName: '',
-      isCreatingActive: false,
-      isNodeEditing: false,
-      currentShapeType: '', // текущий тип фигуры для добавления
-      gridSize: 20,
-      gridColumns: Math.ceil(window.innerWidth / 20),
-      gridRows: Math.ceil(window.innerHeight / 20),
-      stageScale: 1, // Добавляем переменную для отслеживания масштаба
-      showContextMenu: false,
-      mouseClickX: 0,
-      mouseClickY: 0,
-      selectedShape: null as Konva.Shape | Object | null,
-      selectedLine: null as Konva.Arrow | Konva.Line | Object | null,
-      showFloatMenu: false,
       selectedNodeAttributs: {
         absolutePos: {x: 0, y: 0},
         x: 0,
@@ -266,6 +310,40 @@ export default {
         scaleY: 1,
         nodeId: '',
         nodeType: ''
+      },
+
+      groups: [] as ItemGroup[],
+      connections: [] as Line[],
+
+      dragItemId: null as string | null,
+
+      currentShapeType: '', // текущий тип фигуры для добавления
+      selectedGroupName: '',
+      selectedShape: null as Konva.Shape | Object | null,
+      selectedLine: null as Konva.Arrow | Konva.Line | Object | null,
+
+      drawningLine: false,
+      isCreatingActive: false,
+      isNodeEditing: false,
+
+      showContextMenu: false,
+      showTaskMenu: false,
+      showFloatMenu: false,
+      showDescriptionEditor: false,
+
+      mouseClickX: 0,
+      mouseClickY: 0,
+
+      taskTitle: '',
+      taskDescription: '',
+
+      quillReaderOptions: {
+        modules: {
+          toolbar: false
+        },
+        placeholder: 'Compose an epic...',
+        readOnly: true,
+        theme: 'snow'
       }
     };
   },
@@ -422,13 +500,18 @@ export default {
       this.saveStage();
     },
     handleGroupDblClick(e: any) {
-      if(!(e.target instanceof Konva.Text)) {
-        return
-      }
-
       const group = this.groups.find(
         (r) => r.name === this.selectedGroupName
       );
+
+      if (group?.item.shapeType === 'card' && !(e.target instanceof Konva.Text)) {
+        console.log('taskmenu')
+        this.openTaskMenu(group.text?.text as string)
+      }
+
+      if(!(e.target instanceof Konva.Text)) {
+        return
+      }
 
       const textNode = e.target as Konva.Text
       const areaPos = textNode.getAbsolutePosition()
@@ -698,7 +781,7 @@ export default {
                 text: {
                   y: 50,
                   text: 'test',
-                  fontSize: 18,
+                  fontSize: 21,
                   fontFamily: 'Calibri',
                   fill: '#555',
                   width: 200,
@@ -836,6 +919,17 @@ export default {
       if(group === undefined) return;
       group.item.stroke = color
       this.saveStage()
+    },
+    openTaskMenu(title: string) {
+      this.showTaskMenu = true
+      this.taskTitle = title
+      console.log(this.showTaskMenu)
+    },
+    editTaskDescription() {
+      this.showDescriptionEditor = true
+    },
+    saveTaskDescription() {
+      this.showDescriptionEditor = false
     },
     openContext(e: any) {
       if (e.evt instanceof MouseEvent) {
