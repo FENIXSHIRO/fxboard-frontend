@@ -7,12 +7,24 @@
         <div 
           v-for="board in boards"
           @click="openBoard(board._id)"
-          class="me-3 mb-3 w-[150px] h-[150px] border shadow-md rounded-lg align-middle hover:bg-[#eee] cursor-pointer"
+          class="me-3 mb-3 w-[150px] h-[150px] relative border shadow-md rounded-lg align-middle hover:bg-[#eee] cursor-pointer"
         >
-          {{ board.name }}
+          <div class="absolute bottom-0 w-full h-10 border rounded-b-lg text-center align-middle">
+            {{ board.name }}
+          </div>
         </div>
-        <div class="w-[150px] h-[150px] border shadow-md rounded-lg align-middle hover:bg-[#eee]">
-          +
+        <div class="w-[150px] h-[150px] p-11 border shadow-md rounded-lg align-middle hover:bg-[#eee] cursor-pointer">
+          <svg
+            viewBox="0 0 200 200"
+            class="m-auto max-w-[50px] fill-none stroke-2 stroke-[#555]"
+            stroke-linejoin='round'
+            stroke-linecap='round'
+            >
+            <g id="surface1">
+              <path d="M 5.000156 12 L 18.999844 12 " transform="matrix(8.333333,0,0,8.333333,0,0)"/>
+              <path d="M 12 5.000156 L 12 18.999844 " transform="matrix(8.333333,0,0,8.333333,0,0)"/>
+              </g>
+          </svg>
         </div>
       </div>
     </div>
