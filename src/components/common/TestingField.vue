@@ -1,126 +1,84 @@
 <template>
-  <v-stage :config="stageConfig">
-    <v-layer>
-      <v-text
-        :config="textConfig"
-        @transform="handleTransform"
-        @dblclick="handleDblClick"
-        ref="textNode"
-      />
-      <v-transformer
-        ref="transformer"
-        :config="transformerConfig"
-      />
-    </v-layer>
-  </v-stage>
+  <div id="app">
+    <v-stage
+      :config="stageConfig"
+      @dragend="handleDragEnd"
+    >
+      <v-layer>
+        <v-circle
+          v-for="(circle, index) in circles"
+          :key="index"
+          :config="circle"
+        />
+      </v-layer>
+    </v-stage>
+  </div>
 </template>
 
-<script lang="ts">
-import Konva from 'konva';
-import { defineComponent } from 'vue';
+<script>
 
-export default defineComponent({
+export default {
   components: {
   },
   data() {
     return {
       stageConfig: {
+        x: 0,
+        y: 0,
         width: window.innerWidth,
         height: window.innerHeight,
+        draggable: true
       },
-      transformerConfig: {
-        node: this.textNode,
-        enabledAnchors: ['middle-left', 'middle-right'],
-        boundBoxFunc: this.boundBoxFunc,
-      },
-      textConfig: {
-        text: 'Some text here',
-        x: 50,
-        y: 80,
-        fontSize: 20,
-        draggable: true,
-        width: 200,
-      },
-      textNode: null as any | null,
-      transformer: null as any | null,
+      circles: []
     };
   },
-  methods: {
-    boundBoxFunc(oldBox: any, newBox: any) {
-      newBox.width = Math.max(30, newBox.width);
-      return newBox;
-    },
-    handleTransform() {
-      const node = this.textNode.getNode();
-      node.setAttrs({
-        width: node.width() * node.scaleX(),
-        scaleX: 1,
-      });
-    },
-    handleDblClick() {
-      const node = this.textNode.getNode();
-      const tr = this.transformer.getNode();
-      node.hide();
-      tr.hide();
-
-      const textPosition = node.absolutePosition();
-      const areaPosition = {
-        x: textPosition.x,
-        y: textPosition.y,
-      };
-
-      const textarea = document.createElement('textarea');
-      document.body.appendChild(textarea);
-
-      this.setupTextarea(textarea, node, areaPosition);
-      textarea.focus();
-
-      const handleOutsideClick = (e: any) => {
-        if (e.target !== textarea) {
-          node.text(textarea.value);
-          textarea.parentNode?.removeChild(textarea);
-          window.removeEventListener('click', handleOutsideClick);
-          node.show();
-          tr.show();
-          tr.forceUpdate();
-        }
-      };
-
-      setTimeout(() => {
-        window.addEventListener('click', handleOutsideClick);
-      });
-    },
-    setupTextarea(textarea: HTMLTextAreaElement, node: any, areaPosition: { x: number; y: number }) {
-      textarea.value = node.text();
-      textarea.style.position = 'absolute';
-      textarea.style.top = `${areaPosition.y}px`;
-      textarea.style.left = `${areaPosition.x}px`;
-      textarea.style.width = `${node.width() - node.padding() * 2}px`;
-      textarea.style.height = `${node.height() - node.padding() * 2 + 5}px`;
-      textarea.style.fontSize = `${node.fontSize()}px`;
-      textarea.style.border = 'none';
-      textarea.style.padding = '0px';
-      textarea.style.margin = '0px';
-      textarea.style.overflow = 'hidden';
-      textarea.style.background = 'none';
-      textarea.style.outline = 'none';
-      textarea.style.resize = 'none';
-      textarea.style.lineHeight = `${node.lineHeight()}`;
-      textarea.style.fontFamily = node.fontFamily();
-      textarea.style.textAlign = node.align();
-      textarea.style.color = node.fill();
-      const rotation = node.rotation();
-      let transform = rotation ? `rotateZ(${rotation}deg)` : '';
-      transform += `translateY(-${2 + Math.round(node.fontSize() / 20)}px)`;
-      textarea.style.transform = transform;
-
-      textarea.style.height = 'auto';
-      textarea.style.height = `${textarea.scrollHeight + 3}px`;
-    },
-  },
   mounted() {
-    this.textNode = this.$refs.textNode as Konva.Text;
-    this.transformer = this.$refs.transformer as Konva.Transformer;
+    this.generateCircles();
   },
-});
+  methods: {
+    handleDragEnd(e) {
+      this.stageConfig.x = e.target.x();
+      this.stageConfig.y = e.target.y();
+      this.generateCircles();
+      console.log(this.circles.length)
+    },
+    generateCircles() {
+      const WIDTH = 25;
+      const HEIGHT = 25;
+      const startX = Math.floor((-this.stageConfig.x - window.innerWidth) / WIDTH) * WIDTH;
+      const endX = Math.floor((-this.stageConfig.x + window.innerWidth * 2) / WIDTH) * WIDTH;
+      const startY = Math.floor((-this.stageConfig.y - window.innerHeight) / HEIGHT) * HEIGHT;
+      const endY = Math.floor((-this.stageConfig.y + window.innerHeight * 2) / HEIGHT) * HEIGHT;
+
+      const newCircles = [];
+      for (let x = startX; x < endX; x += WIDTH) {
+        for (let y = startY; y < endY; y += HEIGHT) {
+          // Удаление точек, выходящих за пределы видимой области экрана
+          if (x >= -this.stageConfig.x && x <= -this.stageConfig.x + window.innerWidth &&
+              y >= -this.stageConfig.y && y <= -this.stageConfig.y + window.innerHeight) {
+            newCircles.push({
+              x: x + WIDTH / 2,
+              y: y + HEIGHT / 2,
+              radius: 1, // Размер точки
+              listening: false,
+              perfectDrawEnabled: false,
+              shadowForStrokeEnabled: false,
+              hitStrokeWidth: 0,
+              fill: 'black' // Цвет точки
+            });
+          }
+        }
+      }
+      this.circles = newCircles;
+    }
+  }
+};
 </script>
+
+<style>
+#app {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+</style>

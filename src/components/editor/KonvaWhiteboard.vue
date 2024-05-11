@@ -12,21 +12,15 @@
       @mousemove="handleMouseMove"
       @mouseup="handleMouseUp"
       @dragstart="dragStageStart"
+      @dragend="handleStageDragEnd"
     >
       <!-- Фоновая сетка -->
       <v-layer>
-        <!-- Точки сетки -->
-        <template v-for="x in gridColumns">
-          <template v-for="y in gridRows"
-          :key="'gridPoint' + x + '-' + y"
-          >
-            <v-circle
-              :x="x * gridSize"
-              :y="y * gridSize"
-              :config="bgGridConfig"
-            />
-          </template>
-        </template>
+        <v-circle
+          v-for="(circle, index) in circles"
+          :key="index"
+          :config="circle"
+        />
       </v-layer>
       
       <v-layer ref="layer">
@@ -192,9 +186,6 @@ import { QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css';
 import { makeid } from "@/js/helpers/randomGenerator"
 
-const width = window.innerWidth;
-const height = window.innerHeight;
-
 interface ItemGroup {
   x: number
   y: number
@@ -277,11 +268,15 @@ export default {
   data() {
     return {
       configKonva: {
-        width: width,
-        height: height,
+        x: 0,
+        y: 0,
+        width: window.innerWidth,
+        height: window.innerHeight,
         draggable: true
       },
       stageScale: 1, // Добавляем переменную для отслеживания масштаба
+      circles: [],
+
 
       bgGridConfig: {
         radius: 1,
@@ -470,7 +465,9 @@ export default {
       }
     },
     handleGroupDragend(e: any) {
-      this.dragItemId = null;
+      setTimeout(() => {
+        this.dragItemId = null;
+      }, 100);
       this.showFloatMenu = true;
 
       const group = this.groups.find(
@@ -982,6 +979,35 @@ export default {
       transform += `translateY(-${2 + Math.round(node.fontSize() / 20)}px)`;
       textCell.style.transform = transform;
     },
+    generateCircles() {
+      const WIDTH = 25 * this.stageScale;
+      const HEIGHT = 25 * this.stageScale;
+      const startX = Math.floor((-this.configKonva.x - (window.innerWidth * this.stageScale)) / WIDTH) * WIDTH;
+      const endX = Math.floor((-this.configKonva.x + (window.innerWidth * this.stageScale) * 2) / WIDTH) * WIDTH;
+      const startY = Math.floor((-this.configKonva.y - (window.innerHeight * this.stageScale)) / HEIGHT) * HEIGHT;
+      const endY = Math.floor((-this.configKonva.y + (window.innerHeight * this.stageScale) * 2) / HEIGHT) * HEIGHT;
+
+      const newCircles = [];
+      for (let x = startX; x < endX; x += WIDTH) {
+        for (let y = startY; y < endY; y += HEIGHT) {
+          // Удаление точек, выходящих за пределы видимой области экрана
+          if (x >= -this.configKonva.x && x <= -this.configKonva.x + window.innerWidth &&
+              y >= -this.configKonva.y && y <= -this.configKonva.y + window.innerHeight) {
+            newCircles.push({
+              x: x + WIDTH / 2,
+              y: y + HEIGHT / 2,
+              radius: 1, // Размер точки
+              listening: false,
+              perfectDrawEnabled: false,
+              shadowForStrokeEnabled: false,
+              hitStrokeWidth: 0,
+              fill: '#555' // Цвет точки
+            });
+          }
+        }
+      }
+      this.circles = newCircles as any;
+    },
     deleteFromStage() {
       console.log("deletedFormStage")
       this.isNodeEditing = false;
@@ -1006,6 +1032,13 @@ export default {
     dragStageStart() {
       this.showFloatMenu = false
     },
+    handleStageDragEnd(e: any) {
+      if(this.dragItemId) return
+
+      this.configKonva.x = e.target.x();
+      this.configKonva.y = e.target.y();
+      this.generateCircles();
+    },
     async saveStage(newGroup?: any) {
       if(newGroup) this.boardsStore.addItemsToBoarrd(this.boardId, JSON.stringify(newGroup))
 
@@ -1019,6 +1052,7 @@ export default {
     }
   },
   mounted() {
+    this.generateCircles();
     //this.groups = []; // Изменить начальные значения или оставить пустым
     console.log(`Open board: ${this.boardId}`)
     this.loadStage()
