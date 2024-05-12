@@ -117,7 +117,7 @@ export default {
       this.$emit('add-card');
     },
     addFrame() {
-      this.$emit('add-triangle');
+      this.$emit('add-frame');
     }
   }
 }

@@ -31,9 +31,28 @@
           :config="line"
           @contextmenu="openContext"
         />
-        <v-group>
-
+        <!-- Рамки -->
+        <v-group
+          v-for="frame in frames"
+          :key="frame.id"
+          :config="frame"
+          @dragstart="handleFrameDragstart"
+          @dragend="handleFrameDragend"
+        > 
+          <v-group
+            v-for="column in frame.columns"
+            :config="column"
+          >
+            <v-rect
+              :config="column.body"
+            />
+            <v-text
+              v-if="column.text"
+              :config="column.text"
+            />
+          </v-group>
         </v-group>
+        <!-- Элементы -->
         <v-group 
           v-for="group in groups"
           :key="group.id"
@@ -104,6 +123,7 @@
       @add-square="addSquare"
       @add-triangle="addTriangle"
       @add-card="addCard"
+      @add-frame="addFrame"
     />
     <FloatMenu 
       v-if="isNodeEditing && showFloatMenu"
@@ -193,6 +213,7 @@ import '@vueup/vue-quill/dist/vue-quill.snow.css';
 import { makeid } from "@/js/helpers/randomGenerator"
 import { ItemGroup } from "@/js/types/itemGroup"
 import { Line } from "@/js/types/line"
+import { FrameGroup } from "@/js/types/frameGroup"
 
 export default {
   components: {
@@ -259,6 +280,7 @@ export default {
 
       groups: [] as ItemGroup[],
       connections: [] as Line[],
+      frames: [] as FrameGroup[],
 
       dragItemId: null as string | null,
 
@@ -427,6 +449,15 @@ export default {
 
       this.updateSelectedNodeAttributs(e);
       this.saveStage()
+    },
+    handleFrameDragstart(e: any) {
+      this.dragItemId = e.target.id();
+      console.log(this.dragItemId)
+    },
+    handleFrameDragend(e: any) {
+      setTimeout(() => {
+        this.dragItemId = null;
+      }, 100);
     },
     handleGroupTransformStart(e: any) {
       this.showFloatMenu = false;
@@ -847,6 +878,91 @@ export default {
           }
         }
       };
+      stage.on('click', clickHandler);
+    },
+    addFrame() {
+      const stage = (this.$refs.stage as Konva.Stage).getStage();
+      this.isCreatingActive = true;
+
+      let newFrame: FrameGroup; // Определяем переменную здесь
+
+      const clickHandler = (e: KonvaEventObject<MouseEvent>) => {
+        const localId = `frame-${this.frames.length}-${makeid(3)}`
+        const pos = stage.getRelativePointerPosition();
+
+        if(pos) {
+          newFrame = {
+            id: localId,
+            x: pos.x,
+            y: pos.y,
+            width: 600,
+            height: 600,
+            draggable: true,
+            columns: [
+              {
+                x: 0,
+                y: 0,
+                width: 250,
+                height: 600,
+                text: {
+                  text: 'C1',
+                  fontSize: 21,
+                  fontFamily: 'Calibri',
+                  fill: '#555',
+                  width: 250,
+                  height: 50,
+                  padding: 10,
+                  align: 'center',
+                },
+                body: {
+                  x: 0,
+                  y: 0,
+                  width: 250,
+                  height: 600,
+                  fill: 'white',
+                  stroke: '#ddd',
+                  strokeWidth: 1,
+                  cornerRadius: 10
+                }
+              },
+              {
+                x: 255,
+                y: 0,
+                width: 250,
+                height: 600,
+                text: {
+                  text: 'C2',
+                  fontSize: 21,
+                  fontFamily: 'Calibri',
+                  fill: '#555',
+                  width: 250,
+                  height: 50,
+                  padding: 10,
+                  align: 'center',
+                },
+                body: {
+                  x: 0,
+                  y: 0,
+                  width: 250,
+                  height: 600,
+                  fill: 'white',
+                  stroke: '#ddd',
+                  strokeWidth: 1,
+                  cornerRadius: 10
+                }
+              },
+            ]
+          }
+
+          if (newFrame) { // Проверяем, определена ли newItem
+            console.log(newFrame)
+            this.frames.push(newFrame);
+            stage.off('click');
+            stage.on('click', (e) => this.handleStageMouseClick(e));
+            this.isCreatingActive = false;
+          }
+        }
+      }
       stage.on('click', clickHandler);
     },
     addSticker() {

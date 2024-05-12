@@ -1,4 +1,8 @@
+import { taskMessage } from "./taskMessage"
+
 export type ItemGroup = {
+  dbId?: string
+  id: string
   x: number
   y: number
   width: number
@@ -8,7 +12,6 @@ export type ItemGroup = {
   rotation: number
   scaleX: number
   scaleY: number
-  id: string
   draggable: boolean
   name: string
   item: {
@@ -38,6 +41,13 @@ export type ItemGroup = {
     scaleX?: number,
     scaleY?: number
   }
+  taskData?: {
+    performer?: string
+    description?: string
+    dateStart?: Date
+    dateEnd?: Date
+    messages?: taskMessage[]
+  },
   connectionInput?: {
     id: string,
     x: number,
