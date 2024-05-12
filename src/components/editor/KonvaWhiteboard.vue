@@ -414,7 +414,7 @@ export default {
       let newPoints = [lastLine.points[0], lastLine.points[1]];
       lastLine.points = this.getConnectionInputPosBySide(e.target, idType, newPoints)
 
-      this.saveStage()
+      this.updateStageItems()
     },
     handleGroupDragstart(e: any) {
       // сохранить идентификатор перетаскиваемого элемента
@@ -448,7 +448,7 @@ export default {
       group.y = e.target.y();
 
       this.updateSelectedNodeAttributs(e);
-      this.saveStage()
+      this.updateStageItems()
     },
     handleFrameDragstart(e: any) {
       this.dragItemId = e.target.id();
@@ -477,7 +477,7 @@ export default {
       this.showFloatMenu = true;
       this.updateSelectedNodeAttributs(e);
       this.updateTransformer();
-      this.saveStage();
+      this.updateStageItems();
     },
     handleGroupDblClick(e: any) {
       const group = this.groups.find(
@@ -512,7 +512,7 @@ export default {
         textContainer.parentNode?.removeChild(textContainer);
         textCell.removeEventListener('blur', handleOutsideClick);
         textNode.show();
-        this.saveStage()
+        this.updateStageItems()
       };
 
       setTimeout(() => {
@@ -873,8 +873,7 @@ export default {
             stage.off('click');
             stage.on('click', (e) => this.handleStageMouseClick(e));
             this.isCreatingActive = false;
-            //console.log(JSON.stringify(newGroup))
-            //this.saveStage(newGroup)
+            if(newGroup) this.boardsStore.addItemsToBoarrd(this.boardId, JSON.stringify(newGroup))
           }
         }
       };
@@ -1035,7 +1034,7 @@ export default {
       );
       if(group === undefined) return;
       group.item.fill = color
-      this.saveStage()
+      this.updateStageItems()
     },
     changeStroke(color: string) {
       const group = this.groups.find(
@@ -1043,7 +1042,7 @@ export default {
       );
       if(group === undefined) return;
       group.item.stroke = color
-      this.saveStage()
+      this.updateStageItems()
     },
     openTaskMenu(title: string) {
       this.showTaskMenu = true
@@ -1139,7 +1138,7 @@ export default {
         this.connections = this.connections.filter(
           (connection) => connection.id !== (this.selectedLine as any).attrs.id
         );
-        this.saveStage()
+        this.updateStageItems()
         return;
       }
 
@@ -1150,8 +1149,9 @@ export default {
           (group) => group.id !== shapeId
         );
         this.updateTransformer();
+        this.boardsStore.deleteItemFromBoard(this.boardId, shapeId)
       }
-      this.saveStage()
+      this.updateStageItems()
     },
     dragStageStart() {
       this.showFloatMenu = false
@@ -1163,9 +1163,8 @@ export default {
       this.configKonva.y = e.target.y();
       this.generateCircles();
     },
-    async saveStage(newGroup?: any) {
-      if(newGroup) this.boardsStore.addItemsToBoarrd(this.boardId, JSON.stringify(newGroup))
-
+    async updateStageItems() {
+      await this.boardsStore.updateBoardItem(this.boardId, JSON.stringify(this.groups))
       //localStorage.setItem('groups', JSON.stringify(this.groups))
       //localStorage.setItem('connections', JSON.stringify(this.connections))
       //console.log(JSON.stringify(this.groups))
