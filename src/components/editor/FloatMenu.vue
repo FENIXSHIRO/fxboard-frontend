@@ -3,7 +3,7 @@
   :style="{ top: positionY + 'px', left: positionX + 'px' }"
   class="absolute translate-x-[-50%] bg-white border rounded-md shadow-md *:min-h-[30px] *:min-w-[30px] *:rounded-md *:m-[5px]"
   >
-    <PopoverMenu v-if="newNodeType !== 'sticker'">
+    <PopoverMenu v-if="showStrokeSettings">
       <button class="floatMenuButton">
         <svg 
         viewBox="0 0 30 30"
@@ -59,6 +59,7 @@
         <hr class="mb-2 h-px border-t-0 bg-transparent bg-gradient-to-r from-transparent via-neutral-500 to-transparent opacity-50 dark:via-neutral-400" />
         <div class="grid grid-cols-4 gap-2">
           <button
+            v-if="showDeleteFill"
             class="w-[25px] h-[25px] border border-[#aaa] rounded-md"
             @click="changeFill(null)"
           >
@@ -81,6 +82,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import PopoverMenu from '@/components/common/PopoverMenu.vue'
+import { fa } from 'element-plus/es/locale';
 
 export default defineComponent({
   components: {
@@ -145,6 +147,14 @@ export default defineComponent({
       } else {
         return this.newAbsolutePos.y - this.yOffset * this.newScaleY - 95
       }
+    },
+    showStrokeSettings() {
+      if(this.newNodeType === 'card') return false
+      if(this.newNodeType === 'sticker') return false
+      return true
+    },
+    showDeleteFill() {
+      return this.showStrokeSettings
     }
   },
   methods: {
