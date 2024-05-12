@@ -908,6 +908,9 @@ export default {
       };
       stage.position(newPos);
       stage.batchDraw();
+      this.groups.forEach(group => {
+        group.item.strokeWidth = 2 * newScale
+      });
       this.stageScale = newScale; // сохранить текущий масштаб
     },
     changeFill(color: string) {
