@@ -74,6 +74,8 @@
             v-for="connectionInput in group?.connectionInput"
             v-if="drawningLine"
             :config="connectionInput"
+            @mouseover="overInputAnchor"
+            @mouseout="outInputAnchor"
            />
         </v-group>
         <v-transformer
@@ -788,18 +790,13 @@ export default {
             let connectionInputX = 0
             let connectionInputY = 0
 
-            if(shapeType === 'square') {
+            if(shapeType === 'square' || shapeType === 'sticker') {
               connectionInputX = newGroup.width/2
               connectionInputY = newGroup.width/2
             }
 
             if(shapeType === 'card') {
               connectionInputX = newGroup.width/2
-              connectionInputY = newGroup.width/4
-            }
-
-            if(shapeType === 'sticker') {
-              connectionInputX = newGroup.width/4
               connectionInputY = newGroup.width/4
             }
 
@@ -863,6 +860,14 @@ export default {
     },
     addCard() {
       this.addShape('card');
+    },
+    overInputAnchor(e: any) {
+      e.target.fill('#eee');
+      e.target.stroke('#80d0ff');
+    },
+    outInputAnchor(e: any) {
+      e.target.fill('#ddd');
+      e.target.stroke('555');
     },
     handleStageWheel(e: { evt: { deltaY: number; }; }) {
       // определить направление прокрутки
