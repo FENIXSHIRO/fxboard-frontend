@@ -738,6 +738,7 @@ export default {
               break;
           }
 
+          // Определение координат точек соединения
           for (let index = 0; index < 4; index++) {
             let connectionInputId = ''
             let connectionInputX = 0
