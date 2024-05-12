@@ -31,6 +31,9 @@
           :config="line"
           @contextmenu="openContext"
         />
+        <v-group>
+
+        </v-group>
         <v-group 
           v-for="group in groups"
           :key="group.id"
@@ -871,7 +874,7 @@ export default {
     },
     handleStageWheel(e: { evt: { deltaY: number; }; }) {
       // определить направление прокрутки
-      const delta = e.evt.deltaY;
+      const delta = -e.evt.deltaY;
       const stage = (this.$refs.stage as Konva.Stage).getStage();
 
       // масштабировать сцену
@@ -890,6 +893,9 @@ export default {
 
       const newScale = delta > 0 ? oldScale * scaleBy : oldScale / scaleBy;
 
+      if(Math.floor(newScale * 100) <= 20 || Math.floor(newScale * 100) >= 300) {
+        return
+      }
       stage.scale({ x: newScale, y: newScale });
 
       const newPos = {
