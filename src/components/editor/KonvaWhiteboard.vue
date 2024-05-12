@@ -106,6 +106,7 @@
       :scaleY="selectedNodeAttributs.scaleY"
       :rotation="selectedNodeAttributs.rotation"
       :absolutePos="selectedNodeAttributs.absolutePos"
+      :nodeType="selectedNodeAttributs.nodeType"
       @changeStroke="changeStroke"
       @changeFill="changeFill"
     />
@@ -631,7 +632,7 @@ export default {
                 name: localId,
                 item:{
                   stroke: '#212121',
-                  strokeWidth: 4,
+                  strokeWidth: 2,
                   radius: this.defaultParameters.radius,
                   shapeType: 'circle',
                   strokeScaleEnabled: false
@@ -657,7 +658,7 @@ export default {
                   width: this.defaultParameters.width,
                   height: this.defaultParameters.height,
                   stroke: '#212121',
-                  strokeWidth: 4,
+                  strokeWidth: 2,
                   shapeType: 'square',
                   strokeScaleEnabled: false
                 },
@@ -688,7 +689,7 @@ export default {
                 name: localId,
                 item:{
                   stroke: '#212121',
-                  strokeWidth: 4,
+                  strokeWidth: 2,
                   sides: 3,
                   radius: this.defaultParameters.radius,
                   shapeType: 'triangle',

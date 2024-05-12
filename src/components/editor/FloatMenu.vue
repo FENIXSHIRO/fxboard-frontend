@@ -92,6 +92,7 @@ export default defineComponent({
       newScaleY: this.scaleY,
       newRotation: this.rotation,
       newAbsolutePos: this.absolutePos,
+      newNodeType: this.nodeType,
       yOffsetByScaleX: false,
       color1: '#409EFF',
       buttonColors: [
@@ -107,6 +108,7 @@ export default defineComponent({
     scaleY: {type: Number || String, required: true },
     rotation: {type: Number || String, required: true },
     absolutePos: {type: Object as () => { x: number, y: number }, required: true },
+    nodeType: { type: String }
   },
   emits: ['changeFill', 'changeStroke'],
   watch: {
@@ -121,6 +123,9 @@ export default defineComponent({
     },
     absolutePos(newValue) {
       this.newAbsolutePos = newValue
+    },
+    nodeType(newValue) {
+      this.newNodeType = newValue
     }
   },
   computed: {
