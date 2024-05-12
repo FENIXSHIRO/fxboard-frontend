@@ -1,7 +1,6 @@
 import { taskMessage } from "./taskMessage"
 
 export type ItemGroup = {
-  dbId?: string
   id: string
   x: number
   y: number

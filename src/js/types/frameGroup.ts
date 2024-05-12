@@ -1,5 +1,4 @@
 export type FrameGroup = {
-  dbId?: string
   id: string
   x: number
   y: number
