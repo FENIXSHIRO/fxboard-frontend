@@ -33,7 +33,16 @@ export const useBoardsStore = defineStore({
             'Content-Type' : 'application/json'
             }
           }
-        );
+        )
+      },
+      async createNewBoard(userId: string, boardName: string) {
+        const data = {
+          name: boardName
+        }
+        const response = await axios.post(`http://localhost:3000/boards/${userId}/create`, data);
+        this.boards = response.data
+
+        return response.data.name
       }
     }
 });

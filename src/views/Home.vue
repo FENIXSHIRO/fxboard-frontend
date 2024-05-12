@@ -13,7 +13,7 @@
             {{ board.name }}
           </div>
         </div>
-        <div class="w-[150px] h-[150px] p-11 border shadow-md rounded-lg align-middle hover:bg-[#eee] cursor-pointer">
+        <div @click="createBoardModal" class="w-[150px] h-[150px] p-11 border shadow-md rounded-lg align-middle hover:bg-[#eee] cursor-pointer">
           <svg
             viewBox="0 0 200 200"
             class="m-auto max-w-[50px] fill-none stroke-2 stroke-[#555]"
@@ -38,15 +38,42 @@
       </div>
     </div>
   </div>
+  <ElDialog
+    v-model="showBoardCreationModal" 
+    class="rounded-md"
+    title="Создать новую доску" 
+    width="500"
+  >
+    <ElForm :model="form">
+      <ElFormItem label="Название доски" :label-width="140">
+        <ElInput v-model="form.name" autocomplete="off" />
+      </ElFormItem>
+    </ElForm>
+    <template #footer>
+      <div class="dialog-footer">
+        <ElButton @click="showBoardCreationModal = false">Отмена</ElButton>
+        <ElButton type="primary" @click="createNewBoard">
+          Создать
+        </ElButton>
+      </div>
+    </template>
+  </ElDialog>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useBoardsStore } from '@/stores/boards'
+import { ElMessage, ElButton, ElDialog, ElForm, ElFormItem, ElInput } from 'element-plus';
 
 export default defineComponent({
-  components: {},
+  components: {
+    ElDialog,
+    ElForm,
+    ElFormItem,
+    ElInput,
+    ElButton
+  },
   setup() {
     return {
       authStore: useAuthStore(),
@@ -54,7 +81,18 @@ export default defineComponent({
     }
   },
   data: () => ({
-    boards: [] as any
+    boards: [] as any,
+    showBoardCreationModal: false,
+    form: {
+      name: '',
+      region: '',
+      date1: '',
+      date2: '',
+      delivery: false,
+      type: [],
+      resource: '',
+      desc: '',
+    }
   }),
   props: {},
   emits: [],
@@ -69,6 +107,29 @@ export default defineComponent({
     },
     openBoard(id: string) {
       this.$router.push(`/board/${id}`);
+    },
+    createBoardModal() {
+      this.showBoardCreationModal = true
+    },
+    async createNewBoard() {
+      if(this.form.name === '') {
+        ElMessage({
+          message: 'Название не введено',
+          type: 'warning',
+          grouping: true
+        })
+        return
+      }
+      const newBoardName = await this.boardsStore.createNewBoard(this.userId, this.form.name)
+
+      ElMessage({
+        message: `Доска "${newBoardName}" создана`,
+        type: 'success',
+        plain: true,
+      })
+
+      this.getBoards()
+      this.showBoardCreationModal = false
     }
   },
   mounted() {
