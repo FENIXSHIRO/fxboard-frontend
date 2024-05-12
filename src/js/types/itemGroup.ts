@@ -22,6 +22,7 @@ export type ItemGroup = {
     width?: number,
     height?: number,
     sides?: number, // для треугольников
+    cornerRadius?: number
   }
   text?:{
     x?: number

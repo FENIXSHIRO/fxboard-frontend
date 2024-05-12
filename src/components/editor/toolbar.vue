@@ -99,7 +99,7 @@
 export default {
   methods: {
     addSticker() {
-      this.$emit('add-square');
+      this.$emit('add-sticker');
     },
     addCircle() {
       this.$emit('add-circle');

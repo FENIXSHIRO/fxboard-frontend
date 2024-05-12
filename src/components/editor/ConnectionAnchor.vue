@@ -67,7 +67,6 @@ export default defineComponent({
       newRotation: this.rotation,
       newScaleX: this.scaleX,
       newScaleY: this.scaleY,
-      verticalHalf: 50,
       anchorOffset: 20,
       newNodeType: this.nodeType
     };
@@ -108,7 +107,14 @@ export default defineComponent({
   emits: ['connectNodes'],
   computed: {
     horizontalHalf() {
-      if (this.newNodeType === 'card') {
+      if (this.newNodeType === 'card' || this.newNodeType === 'sticker') {
+        return 100
+      } else {
+        return 50
+      }
+    },
+    verticalHalf() {
+      if (this.newNodeType === 'sticker') {
         return 100
       } else {
         return 50

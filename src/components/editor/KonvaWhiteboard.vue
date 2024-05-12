@@ -51,7 +51,6 @@
           />
           <v-rect
             v-if="group.item.shapeType == 'card'"
-            :cornerRadius="10"
             :config="group.item"
           />
           <v-rect
@@ -94,7 +93,8 @@
         />
       </v-layer>
     </v-stage>
-    <Toolbar 
+    <Toolbar
+      @add-sticker="addSticker"
       @add-circle="addCircle"
       @add-square="addSquare"
       @add-triangle="addTriangle"
@@ -299,6 +299,8 @@ export default {
           return 'v-circle';
         case 'square':
           return 'v-rect';
+        case 'sticker':
+          return 'v-rect';
         case 'triangle':
           return 'v-regular-polygon';
         default:
@@ -462,7 +464,7 @@ export default {
       textContainer.appendChild(textCell)
 
       document.body.appendChild(textContainer)
-      this.setupTextarea(textCell, textNode, areaPos)
+      this.setupTextarea(textCell, textNode, areaPos, 'top')
 
       textNode.hide()
 
@@ -558,8 +560,13 @@ export default {
       group.text.scaleX = 1/Math.abs(target.scaleX())
       group.text.scaleY = 1/Math.abs(target.scaleY())
       if(group.item.shapeType !== 'card') {
-        group.text.width = this.defaultParameters.width * Math.abs(target.scaleX())
-        group.text.height = this.defaultParameters.height * Math.abs(target.scaleY())
+        if(group.item.shapeType !== 'sticker') {
+          group.text.width = this.defaultParameters.width * Math.abs(target.scaleX())
+          group.text.height = this.defaultParameters.height * Math.abs(target.scaleY())
+        } else {
+          group.text.width = this.defaultParameters.width * 2 * Math.abs(target.scaleX())
+          group.text.height = this.defaultParameters.height * 2 * Math.abs(target.scaleY())
+        }
       }
       if(!group.connectionInput) return
       for (let index = 0; index < 4; index++) {
@@ -646,8 +653,8 @@ export default {
                 y: pos.y,
                 width: this.defaultParameters.width,
                 height: this.defaultParameters.height,
-                offsetX: 50,
-                offsetY: 50,
+                offsetX: this.defaultParameters.width/2,
+                offsetY: this.defaultParameters.height/2,
                 rotation: 0,
                 scaleX: 1,
                 scaleY: 1,
@@ -667,8 +674,8 @@ export default {
                   fontSize: 18,
                   fontFamily: 'Calibri',
                   fill: '#555',
-                  width: 100,
-                  height: 100,
+                  width: this.defaultParameters.width,
+                  height: this.defaultParameters.height,
                   padding: 20,
                   align: 'center',
                 },
@@ -719,7 +726,8 @@ export default {
                   fill: '#005ef5',
                   strokeWidth: 1,
                   shapeType: 'card',
-                  strokeScaleEnabled: false
+                  strokeScaleEnabled: false,
+                  cornerRadius: 10
                 },
                 text: {
                   y: 50,
@@ -729,6 +737,41 @@ export default {
                   fill: '#555',
                   width: 200,
                   height: 50,
+                  padding: 20,
+                  align: 'center',
+                },
+                connectionInput: []
+              };
+              break;
+              case 'sticker':
+              newGroup = {
+                x: pos.x,
+                y: pos.y,
+                width: this.defaultParameters.width * 2,
+                height: this.defaultParameters.height * 2,
+                offsetX: this.defaultParameters.width,
+                offsetY: this.defaultParameters.height,
+                rotation: 0,
+                scaleX: 1,
+                scaleY: 1,
+                id: localId,
+                draggable: true,
+                name: localId,
+                item:{
+                  width: this.defaultParameters.width * 2,
+                  height: this.defaultParameters.height * 2,
+                  fill: '#cee741',
+                  shapeType: 'sticker',
+                  strokeScaleEnabled: false,
+                  cornerRadius: 3
+                },
+                text: {
+                  text: '',
+                  fontSize: 18,
+                  fontFamily: 'Calibri',
+                  fill: '#555',
+                  width: this.defaultParameters.width * 2,
+                  height: this.defaultParameters.height * 2,
                   padding: 20,
                   align: 'center',
                 },
@@ -752,6 +795,11 @@ export default {
 
             if(shapeType === 'card') {
               connectionInputX = newGroup.width/2
+              connectionInputY = newGroup.width/4
+            }
+
+            if(shapeType === 'sticker') {
+              connectionInputX = newGroup.width/4
               connectionInputY = newGroup.width/4
             }
 
@@ -800,6 +848,9 @@ export default {
         }
       };
       stage.on('click', clickHandler);
+    },
+    addSticker() {
+      this.addShape('sticker');
     },
     addCircle() {
       this.addShape('circle');
@@ -895,7 +946,7 @@ export default {
       this.mouseClickX = e.evt.clientX
       this.mouseClickY = e.evt.clientY
     },
-    setupTextarea(textCell: HTMLDivElement, node: any, areaPosition: { x: number; y: number }) {
+    setupTextarea(textCell: HTMLDivElement, node: any, areaPosition: { x: number; y: number }, align: 'middle' | 'top' = 'middle') {
       textCell.innerHTML = node.text();
       if(textCell.parentElement) {
         textCell.parentElement.classList.add('absolute', 'table');
@@ -907,10 +958,11 @@ export default {
       }
       textCell.contentEditable = 'true';
       textCell.classList.add(
+        'p-3',
         'table-cell',
         'w-full', 
         'h-full',
-        'align-middle',
+        `align-${align}`,
         'text-center',
         'truncate'
       )

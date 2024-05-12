@@ -3,7 +3,7 @@
   :style="{ top: positionY + 'px', left: positionX + 'px' }"
   class="absolute translate-x-[-50%] bg-white border rounded-md shadow-md *:min-h-[30px] *:min-w-[30px] *:rounded-md *:m-[5px]"
   >
-    <PopoverMenu>
+    <PopoverMenu v-if="newNodeType !== 'sticker'">
       <button class="floatMenuButton">
         <svg 
         viewBox="0 0 30 30"
@@ -94,6 +94,7 @@ export default defineComponent({
       newAbsolutePos: this.absolutePos,
       newNodeType: this.nodeType,
       yOffsetByScaleX: false,
+      yOffset: 50,
       color1: '#409EFF',
       buttonColors: [
         '#ffffff', '#212121', '#ffd900', 
@@ -133,10 +134,16 @@ export default defineComponent({
       return  this.newAbsolutePos.x
     },
     positionY() {
-      if(Math.abs(this.newRotation) > 50 && Math.abs(this.newRotation) < 135) {
-        return this.newAbsolutePos.x - 50 * this.newScaleX - 95
+      if(this.nodeType === 'sticker') {
+        this.yOffset = 100
       } else {
-        return this.newAbsolutePos.y - 50 * this.newScaleY - 95
+        this.yOffset = 50
+      }
+
+      if(Math.abs(this.newRotation) > this.yOffset && Math.abs(this.newRotation) < 135) {
+        return this.newAbsolutePos.x - this.yOffset * this.newScaleX - 95
+      } else {
+        return this.newAbsolutePos.y - this.yOffset * this.newScaleY - 95
       }
     }
   },
