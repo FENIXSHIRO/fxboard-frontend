@@ -185,68 +185,8 @@ import { ElDrawer, ElButton, ElDivider, ElDatePicker } from 'element-plus'
 import { QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css';
 import { makeid } from "@/js/helpers/randomGenerator"
-
-interface ItemGroup {
-  x: number
-  y: number
-  width: number
-  height: number
-  offsetX?: number
-  offsetY?: number
-  rotation: number
-  scaleX: number
-  scaleY: number
-  id: string
-  draggable: boolean
-  name: string
-  item: {
-    shapeType: string,
-    strokeScaleEnabled: false,
-    fill?: string,
-    stroke?: string,
-    strokeWidth?: number,
-    // Параметры, специфичные для разных фигур
-    radius?: number,
-    width?: number,
-    height?: number,
-    sides?: number, // для треугольников
-  }
-  text?:{
-    x?: number
-    y?: number
-    text: string,
-    fontSize: number,
-    fontFamily?: string,
-    fill?: string,
-    width?: number,
-    height?: number,
-    padding: number,
-    align: string,
-    scaleX?: number,
-    scaleY?: number
-  }
-  connectionInput?: {
-    id: string,
-    x: number,
-    y: number,
-    radius: number,
-    fill: string,
-    stroke: string,
-    strokeWidth: number,
-    scaleX: number,
-    scaleY: number,
-  }[]
-}
-
-interface Line {
-  id: string
-  points: any[]
-  stroke: string
-  fromId?: string
-  toId?: string
-  fromSide: string
-  toSide: string
-}
+import { ItemGroup } from "@/js/types/itemGroup"
+import { Line } from "@/js/types/line"
 
 export default {
   components: {
