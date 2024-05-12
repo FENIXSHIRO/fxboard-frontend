@@ -82,7 +82,6 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import PopoverMenu from '@/components/common/PopoverMenu.vue'
-import { fa } from 'element-plus/es/locale';
 
 export default defineComponent({
   components: {
