@@ -153,21 +153,36 @@
     <template #header="{ titleId }">
       <h1 :id="titleId" class="font-bold text-xl">{{taskTitle}}</h1>
     </template>
-    <h4 class="text-left">Статус</h4>
+    <div class="text-left text-nowrap">
+      <h4 class="me-2 inline-block">Статус:</h4>
+      <select id="countries" class="inline-block px-0 text-sm text-gray-500 bg-transparent border-0 border-b-2 border-gray-200 appearance-none dark:text-gray-400 dark:border-gray-700 focus:outline-none focus:ring-0 focus:border-gray-200 peer">
+        <option value="inBacklog" selected>Сделать</option>
+        <option value="inWork">В работе</option>
+        <option value="completed">Выполнено</option>
+      </select>
+    </div>
     <ElDivider class="my-2" />
     <div class="flex">
-      <p class="text-left">Исполнитель:</p>
+      <p class="text-left me-2">Исполнитель:</p>
+      <select id="countries" class="inline-block px-0 text-sm text-gray-500 bg-transparent border-0 border-b-2 border-gray-200 appearance-none dark:text-gray-400 dark:border-gray-700 focus:outline-none focus:ring-0 focus:border-gray-200 peer">
+        <option value="inBacklog" selected>IvanT</option>
+        <option value="inWork">TestUser</option>
+      </select>
     </div>
     <div class="my-2 flex content-start">
       <div class="align-middle p-1">C: </div>
       <ElDatePicker
         type="datetime"
+        v-model="dateStart"
         placeholder="Начало"
+        format="YYYY/MM/DD HH:mm"
       />
       <div class="align-middle p-1">До: </div>
       <ElDatePicker
         type="datetime"
+        v-model="dateEnd"
         placeholder="Конец"
+        format="YYYY/MM/DD HH:mm"
       />
     </div>
     <h4 class="text-left">Описание</h4>
@@ -244,6 +259,8 @@ export default {
       stageScale: 1, // Добавляем переменную для отслеживания масштаба
       circles: [],
 
+      dateStart: null as any | null,
+      dateEnd: null as any | null,
 
       bgGridConfig: {
         radius: 1,
