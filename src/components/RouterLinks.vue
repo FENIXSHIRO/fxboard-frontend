@@ -15,12 +15,12 @@
       <template
       v-if="selectefBoardName"
       >
-      {{ selectefBoardName }}
+      <p class="inline-block font-bold">{{ selectefBoardName }}</p>
       </template>
       <template
       v-else
       >
-        <p class="inline-block cursor-default">Домашняя страница</p>
+        <p class="inline-block cursor-default font-bold">Домашняя страница</p>
       </template>
     </nav>
   </div>
@@ -45,7 +45,7 @@ export default defineComponent({
   emits: [],
   computed: {
     selectefBoardName() {
-      return this.boardsStore.board
+      return this.boardsStore.board?.toUpperCase()
     }
   },
   methods: {
