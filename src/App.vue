@@ -2,7 +2,7 @@
   <main>
     <router-view />
   </main>
-  <RouterLinks />
+  <RouterLinks v-if="showNavLinks" />
   <UserPanel v-if="user" />
 
 </template>
@@ -13,6 +13,7 @@ import { defineComponent } from 'vue'
 import RouterLinks from "@/components/RouterLinks.vue";
 import UserPanel from "@/components/UserPanel.vue";
 import { useAuthStore } from './stores/auth';
+import router from './router/router';
 
 export default defineComponent({
   components: {
@@ -30,9 +31,18 @@ export default defineComponent({
   computed: {
     user() {
       return this.authStore.user
+    },
+    showNavLinks() {
+      if(router.currentRoute.value.path === '/auth/login' || router.currentRoute.value.path === '/auth/signup') {
+        return false
+      } else {
+        return true
+      }
     }
   },
-  methods: {}
+  methods: {},
+  mounted() {
+  }
 })
 </script>
 
