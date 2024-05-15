@@ -6,7 +6,7 @@
       <div class="flex flex-wrap m-5 ml-0">
         <div 
           v-for="board in boards"
-          @click="openBoard(board._id)"
+          @click="openBoard(board)"
           class="me-3 mb-3 w-[150px] h-[150px] relative border shadow-md rounded-lg align-middle hover:bg-[#eee] cursor-pointer"
         >
           <div class="absolute bottom-0 w-full h-10 border rounded-b-lg text-center align-middle">
@@ -105,8 +105,9 @@ export default defineComponent({
     async getBoards() {      
       this.boards = await this.boardsStore.getBoards(this.userId)
     },
-    openBoard(id: string) {
-      this.$router.push(`/board/${id}`);
+    openBoard(board: any) {
+      this.$router.push(`/board/${board._id}`);
+      this.boardsStore.board = board.name
     },
     createBoardModal() {
       this.showBoardCreationModal = true

@@ -7,7 +7,7 @@ export const useBoardsStore = defineStore({
     id: 'boards',
     state: () => ({
         boards: [] as any,
-        board: JSON.parse(localStorage.getItem('currentBoard') as string),
+        board: localStorage.getItem('currentBoard'),
         returnUrl: null
     }),
     getters: {
