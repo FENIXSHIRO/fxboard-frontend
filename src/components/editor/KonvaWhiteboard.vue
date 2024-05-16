@@ -921,7 +921,7 @@ export default {
                 width: 250,
                 height: 600,
                 text: {
-                  text: 'C1',
+                  text: 'Сделать',
                   fontSize: 21,
                   fontFamily: 'Calibri',
                   fill: '#555',
@@ -947,7 +947,33 @@ export default {
                 width: 250,
                 height: 600,
                 text: {
-                  text: 'C2',
+                  text: 'В работе',
+                  fontSize: 21,
+                  fontFamily: 'Calibri',
+                  fill: '#555',
+                  width: 250,
+                  height: 50,
+                  padding: 10,
+                  align: 'center',
+                },
+                body: {
+                  x: 0,
+                  y: 0,
+                  width: 250,
+                  height: 600,
+                  fill: 'white',
+                  stroke: '#ddd',
+                  strokeWidth: 1,
+                  cornerRadius: 10
+                }
+              },
+              {
+                x: 510,
+                y: 0,
+                width: 250,
+                height: 600,
+                text: {
+                  text: 'Выполнено',
                   fontSize: 21,
                   fontFamily: 'Calibri',
                   fill: '#555',
